@@ -4,6 +4,16 @@ import { toast } from 'sonner';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
 
+const WASTE_BADGE_VARIANTS = {
+  'Papel': 'blue',
+  'Metal': 'orange',
+  'Óleo': 'orange',
+  'Vidro': 'teal',
+  'Orgânicos': 'gray',
+  'Plástico': 'green',
+  'Recicláveis Geral': 'green',
+};
+
 export function RelatoriosTable({ collections = [], onEdit, onDelete, onViewPhotos }) {
   return (
     <div className="bg-white rounded-2xl border border-yby-border overflow-hidden shadow-card transition-all duration-300 ease-out hover:shadow-card-elevated hover:border-yby-primary/30 cursor-default">
@@ -43,7 +53,9 @@ export function RelatoriosTable({ collections = [], onEdit, onDelete, onViewPhot
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <Badge variant="green">{item.waste}</Badge>
+                    <Badge variant={WASTE_BADGE_VARIANTS[item.waste] || 'green'}>
+                      {item.waste}
+                    </Badge>
                   </td>
 
                   <td className="py-3.5 px-4 font-semibold text-yby-heading">
@@ -51,7 +63,9 @@ export function RelatoriosTable({ collections = [], onEdit, onDelete, onViewPhot
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <Badge variant="beige">{item.breakdown}</Badge>
+                    <Badge variant={item.breakdown === 'Sim' ? 'red' : 'beige'}>
+                      {item.breakdown}
+                    </Badge>
                   </td>
 
                   <td className="py-3.5 px-4 text-xs font-medium text-yby-heading">

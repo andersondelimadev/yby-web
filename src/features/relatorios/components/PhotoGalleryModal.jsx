@@ -31,9 +31,21 @@ export function PhotoGalleryModal({ item, onClose }) {
 
           <div>
             <span className="text-xs font-bold text-yby-heading block mb-2">Status de Avaria</span>
-            <p className="text-xs text-yby-muted bg-yby-surface/40 p-3 rounded-lg border border-yby-border/60">
-              Nenhuma avaria relatada na coleta ({item.breakdown}).
-            </p>
+            {item.breakdown === 'Sim' ? (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-yby-danger bg-red-50 p-3 rounded-lg border border-red-200">
+                  Avaria relatada: problema constatado no coletor/PEV durante a coleta.
+                </p>
+                <div className="w-full h-36 rounded-xl bg-red-50/40 flex flex-col items-center justify-center border border-dashed border-red-200 text-yby-danger">
+                  <ImageIcon className="w-7 h-7 mb-1 opacity-70" />
+                  <span className="text-xs font-medium">Foto comprobatória da avaria</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-yby-muted bg-yby-surface/40 p-3 rounded-lg border border-yby-border/60">
+                Nenhuma avaria relatada na coleta ({item.breakdown}).
+              </p>
+            )}
           </div>
         </div>
 

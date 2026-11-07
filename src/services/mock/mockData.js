@@ -37,12 +37,12 @@ export const MOCK_PLANNING = [
 
 export const MOCK_COLLECTIONS = [
   { id: 2561, date: '15/10/2026', time: '15:00', pev: 'Prisma Residencial', waste: 'Recicláveis Geral', weightKg: 50, breakdown: 'Não', cooperative: 'Rosa Virginia' },
-  { id: 2560, date: '15/10/2026', time: '09:58', pev: 'Mansão Macedo', waste: 'Recicláveis Geral', weightKg: 40, breakdown: 'Não', cooperative: 'Rede Ceará' },
-  { id: 2559, date: '14/10/2026', time: '14:53', pev: 'Hospital Jayme da Fonte', waste: 'Recicláveis Geral', weightKg: 40, breakdown: 'Não', cooperative: 'Coocencipe' },
-  { id: 2558, date: '14/10/2026', time: '10:37', pev: 'Locmed (Loja)', waste: 'Recicláveis Geral', weightKg: 15, breakdown: 'Não', cooperative: 'Rosa Virginia' },
-  { id: 2557, date: '14/10/2026', time: '09:50', pev: 'Jardim Europa', waste: 'Recicláveis Geral', weightKg: 2800, breakdown: 'Não', cooperative: 'Rosa Virginia' },
-  { id: 2556, date: '13/10/2026', time: '15:15', pev: 'Ticiana Rolim', waste: 'Recicláveis Geral', weightKg: 7.5, breakdown: 'Não', cooperative: 'Yby Soluções Sustentáveis' },
-  { id: 2555, date: '13/10/2026', time: '10:54', pev: 'Arvoredo', waste: 'Recicláveis Geral', weightKg: 140, breakdown: 'Não', cooperative: 'Rede Ceará' },
+  { id: 2560, date: '15/10/2026', time: '09:58', pev: 'Mansão Macedo', waste: 'Papel', weightKg: 40, breakdown: 'Não', cooperative: 'Rede Ceará' },
+  { id: 2559, date: '14/10/2026', time: '14:53', pev: 'Hospital Jayme da Fonte', waste: 'Plástico', weightKg: 40, breakdown: 'Sim', cooperative: 'Coocencipe' },
+  { id: 2558, date: '14/10/2026', time: '10:37', pev: 'Locmed (Loja)', waste: 'Vidro', weightKg: 15, breakdown: 'Não', cooperative: 'Rosa Virginia' },
+  { id: 2557, date: '14/10/2026', time: '09:50', pev: 'Jardim Europa', waste: 'Metal', weightKg: 2800, breakdown: 'Não', cooperative: 'Rosa Virginia' },
+  { id: 2556, date: '13/10/2026', time: '15:15', pev: 'Ticiana Rolim', waste: 'Óleo', weightKg: 7.5, breakdown: 'Sim', cooperative: 'Yby Soluções Sustentáveis' },
+  { id: 2555, date: '13/10/2026', time: '10:54', pev: 'Arvoredo', waste: 'Orgânicos', weightKg: 140, breakdown: 'Não', cooperative: 'Rede Ceará' },
   { id: 2554, date: '13/10/2026', time: '10:19', pev: 'Edifício Le Louvre', waste: 'Recicláveis Geral', weightKg: 30, breakdown: 'Não', cooperative: 'Rede Ceará' },
 ];
 

@@ -37,4 +37,9 @@ export const collectionRepository = {
     collectionsStore[idx] = { ...collectionsStore[idx], ...data };
     return collectionsStore[idx];
   },
+
+  reset() {
+    collectionsStore = [...MOCK_COLLECTIONS];
+    return collectionsStore;
+  },
 };
