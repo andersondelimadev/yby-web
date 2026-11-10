@@ -72,4 +72,45 @@ describe('OrganizationTable & OrganizationMobileCard - Destaque de Organização
     );
     expect(inactiveContainer.firstChild.className).toContain('bg-gray-100/90');
   });
+
+  it('deve exibir o CNPJ com destaque visual na tabela e no card mobile', () => {
+    render(
+      <OrganizationTable
+        organizations={mockOrganizations}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onToggleStatus={vi.fn()}
+      />
+    );
+
+    const cnpjLabels = screen.getAllByText('CNPJ');
+    expect(cnpjLabels.length).toBeGreaterThan(0);
+    expect(screen.getByText('07.100.456/0001-89')).toBeInTheDocument();
+  });
+
+  it('deve renderizar organização do tipo YBY com badge verde e ícone representativo', () => {
+    const ybyOrg = {
+      id: 'org-yby',
+      name: 'Yby Soluções Sustentáveis',
+      shortName: 'Yby',
+      cnpj: '07.100.456/0001-89',
+      type: ORGANIZATION_TYPES.YBY,
+      status: ORGANIZATION_STATUS.ATIVA,
+      city: 'Fortaleza',
+      state: 'CE',
+    };
+
+    render(
+      <OrganizationTable
+        organizations={[ybyOrg]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onToggleStatus={vi.fn()}
+      />
+    );
+
+    const ybyBadge = screen.getByText('YBY');
+    expect(ybyBadge).toBeInTheDocument();
+    expect(ybyBadge.closest('span')).toHaveClass('text-yby-primary');
+  });
 });

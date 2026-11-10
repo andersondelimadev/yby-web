@@ -1,37 +1,41 @@
 import { MOCK_COOPERATIVES, MOCK_CLIENTS } from '../mock/mockData.js';
 import { ORGANIZATION_TYPES, ORGANIZATION_STATUS } from '@/domain/constants/organizationTypes.js';
 
-// Base inicial unificada de Organizações (Cooperativas + Clientes)
-let organizationsStore = [
-  // Cooperativas
-  ...MOCK_COOPERATIVES.map((coop, index) => ({
-    id: `coop-${coop.id}`,
-    rawId: coop.id,
-    name: coop.name,
-    shortName: coop.shortName,
-    cnpj: coop.cnpj || `07.${100 + index}.456/0001-89`,
-    type: ORGANIZATION_TYPES.COOPERATIVA,
-    status: index === 3 ? ORGANIZATION_STATUS.INATIVA : ORGANIZATION_STATUS.ATIVA,
-    city: 'Fortaleza',
-    state: 'CE',
-    employees: coop.employees,
-  })),
-  // Clientes
-  ...MOCK_CLIENTS.map((client, index) => ({
-    id: `client-${client.id}`,
-    rawId: client.id,
-    name: client.social_name || client.name,
-    shortName: client.name,
-    cnpj: client.cnpj,
-    type: ORGANIZATION_TYPES.CLIENTE,
-    status: index === 7 ? ORGANIZATION_STATUS.INATIVA : ORGANIZATION_STATUS.ATIVA,
-    city: client.city || 'Fortaleza',
-    state: client.state || 'CE',
-    neighborhood: client.neighborhood,
-    phone: client.phone,
-    email: client.email,
-  })),
-];
+// Base inicial unificada de Organizações (YBY + Cooperativas + Clientes)
+function getInitialOrganizations() {
+  return [
+    // Entidade YBY e Cooperativas
+    ...MOCK_COOPERATIVES.map((coop, index) => ({
+      id: `coop-${coop.id}`,
+      rawId: coop.id,
+      name: coop.name,
+      shortName: coop.shortName,
+      cnpj: coop.cnpj || `07.${100 + index}.456/0001-89`,
+      type: index === 0 ? ORGANIZATION_TYPES.YBY : ORGANIZATION_TYPES.COOPERATIVA,
+      status: index === 3 ? ORGANIZATION_STATUS.INATIVA : ORGANIZATION_STATUS.ATIVA,
+      city: 'Fortaleza',
+      state: 'CE',
+      employees: coop.employees,
+    })),
+    // Clientes
+    ...MOCK_CLIENTS.map((client, index) => ({
+      id: `client-${client.id}`,
+      rawId: client.id,
+      name: client.social_name || client.name,
+      shortName: client.name,
+      cnpj: client.cnpj,
+      type: ORGANIZATION_TYPES.CLIENTE,
+      status: index === 7 ? ORGANIZATION_STATUS.INATIVA : ORGANIZATION_STATUS.ATIVA,
+      city: client.city || 'Fortaleza',
+      state: client.state || 'CE',
+      neighborhood: client.neighborhood,
+      phone: client.phone,
+      email: client.email,
+    })),
+  ];
+}
+
+let organizationsStore = getInitialOrganizations();
 
 /**
  * Repositório central de Organizações do Painel Administrativo.
@@ -145,5 +149,13 @@ export const organizationRepository = {
     if (!exists) throw new Error('Organização não encontrada para exclusão.');
     organizationsStore = organizationsStore.filter((o) => o.id !== id);
     return true;
+  },
+
+  /**
+   * Restaura os dados originais simulados para testes.
+   */
+  reset() {
+    organizationsStore = getInitialOrganizations();
+    return organizationsStore;
   },
 };

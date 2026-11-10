@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, Building2, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, Building2, Truck, Sprout, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
 import { ORGANIZATION_TYPES, ORGANIZATION_STATUS } from '@/domain/constants/organizationTypes.js';
@@ -30,6 +30,7 @@ export function OrganizationTable({
           <tbody className="divide-y divide-yby-border/60 text-sm">
             {organizations.map((org, index) => {
               const isEven = index % 2 === 1;
+              const isYby = org.type === ORGANIZATION_TYPES.YBY;
               const isCooperativa = org.type === ORGANIZATION_TYPES.COOPERATIVA;
               const isActive = org.status === ORGANIZATION_STATUS.ATIVA;
 
@@ -51,12 +52,16 @@ export function OrganizationTable({
                         className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                           !isActive
                             ? 'bg-gray-200/80 text-gray-500'
-                            : isCooperativa
+                            : isYby
                             ? 'bg-yby-tint text-yby-primary'
+                            : isCooperativa
+                            ? 'bg-emerald-50 text-yby-teal'
                             : 'bg-yby-surface text-yby-heading'
                         }`}
                       >
-                        {isCooperativa ? (
+                        {isYby ? (
+                          <Sprout className="w-4 h-4" />
+                        ) : isCooperativa ? (
                           <Truck className="w-4 h-4" />
                         ) : (
                           <Building2 className="w-4 h-4" />
@@ -70,16 +75,31 @@ export function OrganizationTable({
                         >
                           {org.name}
                         </p>
-                        <span className="text-xs text-yby-muted font-mono block mt-0.5">
-                          {org.cnpj || 'Sem CNPJ informado'}
-                        </span>
+                        <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-md bg-yby-surface/80 border border-yby-border text-xs font-mono">
+                          <span className="font-bold text-[10px] text-yby-muted uppercase tracking-wider">
+                            CNPJ
+                          </span>
+                          <span className={`font-bold ${isActive ? 'text-yby-heading' : 'text-gray-600'}`}>
+                            {org.cnpj || 'Sem CNPJ informado'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </td>
 
                   {/* Tipo da Organização */}
                   <td className="py-3.5 px-4">
-                    <Badge variant={!isActive ? 'gray' : isCooperativa ? 'green' : 'beige'}>
+                    <Badge
+                      variant={
+                        !isActive
+                          ? 'gray'
+                          : isYby
+                          ? 'green'
+                          : isCooperativa
+                          ? 'teal'
+                          : 'beige'
+                      }
+                    >
                       {org.type}
                     </Badge>
                   </td>

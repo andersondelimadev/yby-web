@@ -3,16 +3,26 @@ import { organizationRepository } from './organizationRepository.js';
 import { ORGANIZATION_TYPES, ORGANIZATION_STATUS } from '@/domain/constants/organizationTypes.js';
 
 describe('organizationRepository - Gestão de Organizações', () => {
+  beforeEach(() => {
+    organizationRepository.reset();
+  });
+
   it('deve listar todas as organizações cadastradas', async () => {
     const list = await organizationRepository.getAll();
     expect(list.length).toBeGreaterThan(0);
     const hasCoop = list.some((o) => o.type === ORGANIZATION_TYPES.COOPERATIVA);
     const hasClient = list.some((o) => o.type === ORGANIZATION_TYPES.CLIENTE);
+    const hasYby = list.some((o) => o.type === ORGANIZATION_TYPES.YBY);
     expect(hasCoop).toBe(true);
     expect(hasClient).toBe(true);
+    expect(hasYby).toBe(true);
   });
 
   it('deve filtrar organizações por tipo', async () => {
+    const ybyOrgs = await organizationRepository.getAll({ type: ORGANIZATION_TYPES.YBY });
+    expect(ybyOrgs.length).toBeGreaterThan(0);
+    expect(ybyOrgs.every((o) => o.type === ORGANIZATION_TYPES.YBY)).toBe(true);
+
     const coops = await organizationRepository.getAll({ type: ORGANIZATION_TYPES.COOPERATIVA });
     expect(coops.length).toBeGreaterThan(0);
     expect(coops.every((o) => o.type === ORGANIZATION_TYPES.COOPERATIVA)).toBe(true);
