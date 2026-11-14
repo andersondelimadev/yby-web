@@ -7,9 +7,9 @@ import { YbyIcon } from '@/shared/ui/YbyIcon.jsx';
  * @see docs/04-REFORMULACAO-NOVO-DESIGN.md
  */
 export function AuthSplitLayout({
-  badge = 'PLATAFORMA DE COLETA SELETIVA',
-  headline = 'Cada coleta registrada vira impacto medido.',
-  description = 'Acompanhe resíduos, cooperativas e pontos de entrega voluntária em um só lugar.',
+  badge = null,
+  headline = 'Rastreabilidade e Mensuração de Impacto',
+  description = null,
   children,
 }) {
   const navigate = useNavigate();
@@ -37,12 +37,18 @@ export function AuthSplitLayout({
               {badge}
             </span>
           )}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.15] mb-4">
+          <h2
+            className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.15] ${
+              description ? 'mb-4' : ''
+            }`}
+          >
             {headline}
           </h2>
-          <p className="text-sm md:text-base text-white/80 leading-relaxed">
-            {description}
-          </p>
+          {description && (
+            <p className="text-sm md:text-base text-white/80 leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* Rodapé do painel */}

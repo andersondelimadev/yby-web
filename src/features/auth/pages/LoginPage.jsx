@@ -38,7 +38,11 @@ export function LoginPage() {
   };
 
   return (
-    <AuthSplitLayout>
+    <AuthSplitLayout
+      badge={null}
+      headline="Rastreabilidade e Mensuração de Impacto"
+      description={null}
+    >
       <div className="mb-6">
         <h1 className="text-2xl font-extrabold text-yby-heading tracking-tight">
           Bem-vindo de volta
