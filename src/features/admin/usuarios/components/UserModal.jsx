@@ -110,16 +110,6 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
           />
 
           <SelectField
-            label="Papel"
-            required
-            options={roleOptions}
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            placeholder={null}
-            helperText="Define as permissões e o nível de acesso do usuário dentro da plataforma."
-          />
-
-          <SelectField
             label="Organização Vinculada"
             required
             options={orgOptions}
@@ -127,6 +117,16 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
             onChange={(e) => setOrganizationId(e.target.value)}
             placeholder="Selecione uma organização..."
             helperText="Identifica a cooperativa ou cliente ao qual o usuário está vinculado."
+          />
+
+          <SelectField
+            label="Papel"
+            required
+            options={roleOptions}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            placeholder={null}
+            helperText="Define as permissões e o nível de acesso do usuário dentro da plataforma."
           />
 
           {/* Botões de Ação */}

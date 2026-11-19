@@ -210,8 +210,14 @@ describe('Fluxo do Painel Administrativo de Usuários (UI e Interações)', () =
       // Campos
       expect(screen.getByLabelText(/Nome Completo/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/E-mail/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/^Papel/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Organização Vinculada/i)).toBeInTheDocument();
+      const orgField = screen.getByLabelText(/Organização Vinculada/i);
+      const roleField = screen.getByLabelText(/^Papel/i);
+      expect(orgField).toBeInTheDocument();
+      expect(roleField).toBeInTheDocument();
+      // Organização Vinculada aparece antes de Papel
+      expect(
+        Boolean(orgField.compareDocumentPosition(roleField) & Node.DOCUMENT_POSITION_FOLLOWING)
+      ).toBe(true);
 
       // Verifica se as 5 opções oficiais de Papel estão presentes no Select
       const roleSelect = screen.getByLabelText(/^Papel/i);
