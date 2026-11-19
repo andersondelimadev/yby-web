@@ -73,7 +73,7 @@ describe('OrganizationTable & OrganizationMobileCard - Destaque de Organização
     expect(inactiveContainer.firstChild.className).toContain('bg-gray-100/90');
   });
 
-  it('deve exibir o CNPJ com destaque visual na tabela e no card mobile', () => {
+  it('deve exibir o CNPJ em coluna própria no lugar de Localidade e manter o nome limpo', () => {
     render(
       <OrganizationTable
         organizations={mockOrganizations}
@@ -83,9 +83,14 @@ describe('OrganizationTable & OrganizationMobileCard - Destaque de Organização
       />
     );
 
-    const cnpjLabels = screen.getAllByText('CNPJ');
-    expect(cnpjLabels.length).toBeGreaterThan(0);
-    expect(screen.getByText('07.100.456/0001-89')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CNPJ' })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: /Localidade/i })).not.toBeInTheDocument();
+
+    const rows = screen.getAllByRole('row');
+    const firstDataRow = rows[1];
+    expect(firstDataRow.cells[0]).toHaveTextContent('Yby Soluções Sustentáveis');
+    expect(firstDataRow.cells[0]).not.toHaveTextContent('07.100.456/0001-89');
+    expect(firstDataRow.cells[3]).toHaveTextContent('07.100.456/0001-89');
   });
 
   it('deve renderizar organização do tipo YBY com badge verde e ícone representativo', () => {

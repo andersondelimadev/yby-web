@@ -23,7 +23,7 @@ export function OrganizationTable({
               <th className="py-3.5 px-4 min-w-[240px]">Nome da Organização</th>
               <th className="py-3.5 px-4 min-w-[140px]">Tipo</th>
               <th className="py-3.5 px-4 min-w-[130px]">Status</th>
-              <th className="py-3.5 px-4 min-w-[140px]">Localidade</th>
+              <th className="py-3.5 px-4 min-w-[170px]">CNPJ</th>
               <th className="py-3.5 px-4 text-center min-w-[120px]">Ações</th>
             </tr>
           </thead>
@@ -45,7 +45,7 @@ export function OrganizationTable({
                       : 'bg-white hover:bg-yby-tint/40'
                   }`}
                 >
-                  {/* Nome e CNPJ */}
+                  {/* Nome da Organização */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
                       <div
@@ -67,23 +67,13 @@ export function OrganizationTable({
                           <Building2 className="w-4 h-4" />
                         )}
                       </div>
-                      <div>
-                        <p
-                          className={`font-bold leading-tight ${
-                            isActive ? 'text-yby-heading' : 'text-gray-600'
-                          }`}
-                        >
-                          {org.name}
-                        </p>
-                        <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-md bg-yby-surface/80 border border-yby-border text-xs font-mono">
-                          <span className="font-bold text-[10px] text-yby-muted uppercase tracking-wider">
-                            CNPJ
-                          </span>
-                          <span className={`font-bold ${isActive ? 'text-yby-heading' : 'text-gray-600'}`}>
-                            {org.cnpj || 'Sem CNPJ informado'}
-                          </span>
-                        </div>
-                      </div>
+                      <p
+                        className={`font-bold leading-tight ${
+                          isActive ? 'text-yby-heading' : 'text-gray-600'
+                        }`}
+                      >
+                        {org.name}
+                      </p>
                     </div>
                   </td>
 
@@ -133,10 +123,15 @@ export function OrganizationTable({
                     </button>
                   </td>
 
-                  {/* Localidade */}
-                  <td className="py-3.5 px-4 text-xs text-yby-muted">
-                    {org.city || 'Fortaleza'} / {org.state || 'CE'}
-                    {org.neighborhood && ` · ${org.neighborhood}`}
+                  {/* CNPJ */}
+                  <td className="py-3.5 px-4">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-md bg-yby-surface/80 border border-yby-border text-xs font-mono font-bold whitespace-nowrap ${
+                        isActive ? 'text-yby-heading' : 'text-gray-600'
+                      }`}
+                    >
+                      {org.cnpj || 'Sem CNPJ informado'}
+                    </span>
                   </td>
 
                   {/* Ações */}
