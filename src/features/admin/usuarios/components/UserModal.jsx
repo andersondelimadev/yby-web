@@ -4,6 +4,7 @@ import { InputField } from '@/shared/ui/InputField.jsx';
 import { SelectField } from '@/shared/ui/SelectField.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
 import { USER_ROLE_LIST, USER_ROLES } from '@/domain/constants/userRoles.js';
+import { USER_STATUS_LIST, USER_STATUS } from '@/domain/constants/userStatuses.js';
 import { toast } from 'sonner';
 
 export function UserModal({ user, organizations = [], onClose, onSave, saving }) {
@@ -11,31 +12,39 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState(USER_ROLES.COLABORADOR_YBY.id);
   const [organizationId, setOrganizationId] = useState('');
+  const [role, setRole] = useState(USER_ROLES.COLABORADOR_YBY.id);
+  const [status, setStatus] = useState(USER_STATUS.PENDING.id);
 
   useEffect(() => {
     if (user) {
       setName(user.name || '');
       setEmail(user.email || '');
-      setRole(user.role || USER_ROLES.COLABORADOR_YBY.id);
       setOrganizationId(user.organizationId || '');
+      setRole(user.role || USER_ROLES.COLABORADOR_YBY.id);
+      setStatus(user.status || USER_STATUS.PENDING.id);
     } else {
       setName('');
       setEmail('');
-      setRole(USER_ROLES.COLABORADOR_YBY.id);
       setOrganizationId('');
+      setRole(USER_ROLES.COLABORADOR_YBY.id);
+      setStatus(USER_STATUS.PENDING.id);
     }
   }, [user, organizations]);
+
+  const orgOptions = organizations.map((o) => ({
+    value: o.id,
+    label: `${o.name} (${o.type})`,
+  }));
 
   const roleOptions = USER_ROLE_LIST.map((r) => ({
     value: r.id,
     label: r.label,
   }));
 
-  const orgOptions = organizations.map((o) => ({
-    value: o.id,
-    label: `${o.name} (${o.type})`,
+  const statusOptions = USER_STATUS_LIST.map((s) => ({
+    value: s.id,
+    label: s.label,
   }));
 
   const handleSubmit = (e) => {
@@ -58,12 +67,18 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
       email: email.trim(),
       role,
       organizationId,
+      status,
     });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 border border-yby-border shadow-popup relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="user-modal-title"
+    >
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 border border-yby-border shadow-popup relative max-h-[90vh] overflow-y-auto">
         {/* Topo do Modal */}
         <div className="flex items-center justify-between border-b border-yby-border/60 pb-3 mb-5">
           <div className="flex items-center gap-2.5">
@@ -71,12 +86,12 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
               {isEditing ? <Users className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             </div>
             <div>
-              <h3 className="font-extrabold text-lg text-yby-heading">
+              <h3 id="user-modal-title" className="font-extrabold text-lg text-yby-heading">
                 {isEditing ? 'Editar Usuário' : 'Novo Usuário'}
               </h3>
               <p className="text-xs text-yby-muted">
                 {isEditing
-                  ? 'Atualize os dados e o papel do colaborador'
+                  ? 'Atualize os dados, o papel e o status do colaborador'
                   : 'Cadastre um novo usuário e vincule-o a uma organização'}
               </p>
             </div>
@@ -85,6 +100,7 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-yby-surface"
+            aria-label="Fechar modal de usuário"
           >
             <X className="w-5 h-5" />
           </button>
@@ -127,6 +143,15 @@ export function UserModal({ user, organizations = [], onClose, onSave, saving })
             onChange={(e) => setRole(e.target.value)}
             placeholder={null}
             helperText="Define as permissões e o nível de acesso do usuário dentro da plataforma."
+          />
+
+          <SelectField
+            label="Status"
+            required
+            options={statusOptions}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            placeholder={null}
           />
 
           {/* Botões de Ação */}

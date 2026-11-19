@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, X } from 'lucide-react';
 import { SelectField } from '@/shared/ui/SelectField.jsx';
 import { USER_ROLE_LIST } from '@/domain/constants/userRoles.js';
+import { USER_STATUS_LIST } from '@/domain/constants/userStatuses.js';
 
 export function UserFilterBar({ filters, organizations = [] }) {
   const roleOptions = [
@@ -14,12 +15,21 @@ export function UserFilterBar({ filters, organizations = [] }) {
     ...organizations.map((o) => ({ value: o.id, label: `${o.name} (${o.type})` })),
   ];
 
+  const statusOptions = [
+    { value: 'Todos', label: 'Todos os status' },
+    ...USER_STATUS_LIST.map((s) => ({ value: s.id, label: s.label })),
+  ];
+
+  const activeStatus = filters.status || 'Todos';
   const hasActiveFilters =
-    filters.search || filters.role !== 'Todos' || filters.organizationId !== 'Todas';
+    filters.search ||
+    filters.role !== 'Todos' ||
+    filters.organizationId !== 'Todas' ||
+    activeStatus !== 'Todos';
 
   return (
     <div className="bg-yby-surface p-4 sm:p-5 rounded-2xl border border-yby-border mb-6 transition-all duration-300 ease-out hover:shadow-card hover:border-yby-primary/30 cursor-default">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         {/* Campo de Busca */}
         <div className="space-y-1">
           <label className="text-xs font-semibold text-yby-heading block">
@@ -37,6 +47,15 @@ export function UserFilterBar({ filters, organizations = [] }) {
           </div>
         </div>
 
+        {/* Filtro por Organização */}
+        <SelectField
+          label="Organização vinculada"
+          options={orgOptions}
+          value={filters.organizationId}
+          onChange={(e) => filters.setOrganizationId(e.target.value)}
+          placeholder={null}
+        />
+
         {/* Filtro por Papel */}
         <SelectField
           label="Papel"
@@ -46,12 +65,12 @@ export function UserFilterBar({ filters, organizations = [] }) {
           placeholder={null}
         />
 
-        {/* Filtro por Organização */}
+        {/* Filtro por Status */}
         <SelectField
-          label="Organização vinculada"
-          options={orgOptions}
-          value={filters.organizationId}
-          onChange={(e) => filters.setOrganizationId(e.target.value)}
+          label="Status"
+          options={statusOptions}
+          value={activeStatus}
+          onChange={(e) => filters.setStatus?.(e.target.value)}
           placeholder={null}
         />
       </div>

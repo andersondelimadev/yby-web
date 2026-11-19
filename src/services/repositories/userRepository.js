@@ -1,4 +1,5 @@
 import { USER_ROLES } from '@/domain/constants/userRoles.js';
+import { USER_STATUS } from '@/domain/constants/userStatuses.js';
 
 let usersStore = [
   {
@@ -9,6 +10,7 @@ let usersStore = [
     organizationId: 'coop-1',
     organizationName: 'Yby Soluções Sustentáveis',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.ACTIVE.id,
     avatar: '',
   },
   {
@@ -19,6 +21,7 @@ let usersStore = [
     organizationId: 'coop-1',
     organizationName: 'Yby Soluções Sustentáveis',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.ACTIVE.id,
     avatar: '',
   },
   {
@@ -29,6 +32,7 @@ let usersStore = [
     organizationId: 'coop-4',
     organizationName: 'Rosa Virginia',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.ACTIVE.id,
     avatar: '',
   },
   {
@@ -39,6 +43,7 @@ let usersStore = [
     organizationId: 'coop-2',
     organizationName: 'Coocencipe',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.PENDING.id,
     avatar: '',
   },
   {
@@ -49,6 +54,7 @@ let usersStore = [
     organizationId: 'client-1',
     organizationName: 'Ticiana Rolim Empreendimentos',
     organizationType: 'Cliente',
+    status: USER_STATUS.ACTIVE.id,
     avatar: '',
   },
   {
@@ -59,6 +65,7 @@ let usersStore = [
     organizationId: 'coop-2',
     organizationName: 'Coocencipe',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.INACTIVE.id,
     avatar: '',
   },
   {
@@ -69,6 +76,7 @@ let usersStore = [
     organizationId: 'client-2',
     organizationName: 'Hospital Jayme da Fonte Ltda',
     organizationType: 'Cliente',
+    status: USER_STATUS.ACTIVE.id,
     avatar: '',
   },
   {
@@ -79,13 +87,14 @@ let usersStore = [
     organizationId: 'coop-3',
     organizationName: 'Rede Ceará',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.PENDING.id,
     avatar: '',
   },
 ];
 
 /**
  * Repositório de Usuários do Painel Administrativo.
- * Suporta consultas com filtros por busca textual, papel (role) e organização.
+ * Suporta consultas com filtros por busca textual, papel (role), organização e status.
  */
 export const userRepository = {
   /**
@@ -94,9 +103,10 @@ export const userRepository = {
    * @param {string} [filters.search]
    * @param {string} [filters.role]
    * @param {string} [filters.organizationId]
+   * @param {string} [filters.status]
    * @returns {Promise<Array<Object>>}
    */
-  async getAll({ search = '', role = '', organizationId = '' } = {}) {
+  async getAll({ search = '', role = '', organizationId = '', status = '' } = {}) {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     return usersStore.filter((user) => {
@@ -117,6 +127,10 @@ export const userRepository = {
         return false;
       }
 
+      if (status && status !== 'Todos' && user.status !== status) {
+        return false;
+      }
+
       return true;
     });
   },
@@ -129,6 +143,7 @@ export const userRepository = {
   async create(data) {
     const newUser = {
       id: Date.now(),
+      status: USER_STATUS.PENDING.id,
       ...data,
     };
     usersStore.unshift(newUser);

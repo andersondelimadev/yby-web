@@ -13,6 +13,7 @@ export function useUsuariosController() {
   const [search, setSearch] = useState('');
   const [role, setRole] = useState('Todos');
   const [organizationId, setOrganizationId] = useState('Todas');
+  const [status, setStatus] = useState('Todos');
 
   // Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +28,7 @@ export function useUsuariosController() {
     try {
       setLoading(true);
       const [userData, orgData] = await Promise.all([
-        userRepository.getAll({ search, role, organizationId }),
+        userRepository.getAll({ search, role, organizationId, status }),
         organizationRepository.getAll(),
       ]);
       setUsers(userData);
@@ -42,7 +43,7 @@ export function useUsuariosController() {
   useEffect(() => {
     fetchUsers();
     setCurrentPage(1);
-  }, [search, role, organizationId]);
+  }, [search, role, organizationId, status]);
 
   const handleSave = async (formData) => {
     try {
@@ -92,6 +93,7 @@ export function useUsuariosController() {
     setSearch('');
     setRole('Todos');
     setOrganizationId('Todas');
+    setStatus('Todos');
   };
 
   // Paginação
@@ -118,6 +120,8 @@ export function useUsuariosController() {
       setRole,
       organizationId,
       setOrganizationId,
+      status,
+      setStatus,
       handleClearFilters,
     },
     modals: {

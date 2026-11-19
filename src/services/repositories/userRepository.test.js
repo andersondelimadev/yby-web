@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { userRepository } from './userRepository.js';
 import { USER_ROLES } from '@/domain/constants/userRoles.js';
+import { USER_STATUS } from '@/domain/constants/userStatuses.js';
 
 describe('userRepository - Gestão de Usuários', () => {
   it('deve listar usuários cadastrados contemplando os papéis do sistema', async () => {
@@ -84,5 +85,26 @@ describe('userRepository - Gestão de Usuários', () => {
 
     const check = await userRepository.getById(created.id);
     expect(check).toBeNull();
+  });
+
+  it('deve filtrar usuários por status e iniciar novos usuários como pending por padrão', async () => {
+    const activeUsers = await userRepository.getAll({ status: USER_STATUS.ACTIVE.id });
+    expect(activeUsers.length).toBeGreaterThan(0);
+    expect(activeUsers.every((u) => u.status === USER_STATUS.ACTIVE.id)).toBe(true);
+
+    const pendingUsers = await userRepository.getAll({ status: USER_STATUS.PENDING.id });
+    expect(pendingUsers.length).toBeGreaterThan(0);
+    expect(pendingUsers.every((u) => u.status === USER_STATUS.PENDING.id)).toBe(true);
+
+    const created = await userRepository.create({
+      name: 'Novo Pendente',
+      email: 'pendente@yby.com',
+      role: USER_ROLES.CLIENTE.id,
+      organizationId: 'client-1',
+      organizationName: 'Ticiana Rolim Empreendimentos',
+      organizationType: 'Cliente',
+    });
+    expect(created.status).toBe(USER_STATUS.PENDING.id);
+    await userRepository.delete(created.id);
   });
 });

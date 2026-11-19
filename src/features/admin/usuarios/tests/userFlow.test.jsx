@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { USER_ROLES, USER_ROLE_LIST } from '@/domain/constants/userRoles.js';
+import { USER_STATUS } from '@/domain/constants/userStatuses.js';
 import { UserTable } from '../components/UserTable.jsx';
 import { UserFilterBar } from '../components/UserFilterBar.jsx';
 import { UserMobileCard } from '../components/UserMobileCard.jsx';
@@ -23,6 +24,7 @@ const mockUsers = [
     organizationId: 'coop-1',
     organizationName: 'Yby Soluções Sustentáveis',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.ACTIVE.id,
   },
   {
     id: 2,
@@ -32,6 +34,7 @@ const mockUsers = [
     organizationId: 'coop-2',
     organizationName: 'Coocencipe',
     organizationType: 'Cooperativa',
+    status: USER_STATUS.PENDING.id,
   },
   {
     id: 3,
@@ -41,12 +44,13 @@ const mockUsers = [
     organizationId: 'client-1',
     organizationName: 'Ticiana Rolim Empreendimentos',
     organizationType: 'Cliente',
+    status: USER_STATUS.INACTIVE.id,
   },
 ];
 
 describe('Fluxo do Painel Administrativo de Usuários (UI e Interações)', () => {
   describe('1. Fluxo de Listagem de Usuários (Tabela Desktop e Cards Mobile)', () => {
-    it('deve renderizar a tabela desktop com dados dos usuários, papéis e organizações', () => {
+    it('deve renderizar a tabela desktop com dados dos usuários, papéis, organizações e coluna Status', () => {
       const onEdit = vi.fn();
       const onDelete = vi.fn();
       const onPageChange = vi.fn();
@@ -63,20 +67,27 @@ describe('Fluxo do Painel Administrativo de Usuários (UI e Interações)', () =
         />
       );
 
-      // Verifica dados do primeiro usuário
+      // Verifica ordem das colunas: Usuário | Papel | Organização Vinculada | Status | Ações
+      const headers = screen.getAllByRole('columnheader').map((th) => th.textContent.trim());
+      expect(headers).toEqual(['Usuário', 'Papel', 'Organização Vinculada', 'Status', 'Ações']);
+
+      // Verifica dados do primeiro usuário e badges de Status
       expect(screen.getByText('Mariana Silva')).toBeInTheDocument();
       expect(screen.getByText('mariana@somosyby.com')).toBeInTheDocument();
       expect(screen.getByText('Gestor Yby')).toBeInTheDocument();
       expect(screen.getByText('Yby Soluções Sustentáveis')).toBeInTheDocument();
+      expect(screen.getByText('Ativo')).toBeInTheDocument();
 
-      // Verifica segundo usuário com papel de cooperativa
+      // Verifica segundo usuário com papel de cooperativa e status Pendente
       expect(screen.getByText('Carlos Nascimento')).toBeInTheDocument();
       expect(screen.getByText('carlos@coocencipe.org')).toBeInTheDocument();
       expect(screen.getByText('Colaborador da Cooperativa')).toBeInTheDocument();
+      expect(screen.getByText('Pendente')).toBeInTheDocument();
 
-      // Verifica terceiro usuário com papel de cliente
+      // Verifica terceiro usuário com papel de cliente e status Inativo
       expect(screen.getByText('Juliana Rocha')).toBeInTheDocument();
       expect(screen.getByText('Cliente')).toBeInTheDocument();
+      expect(screen.getByText('Inativo')).toBeInTheDocument();
 
       // Verifica contador
       expect(
@@ -279,6 +290,7 @@ describe('Fluxo do Painel Administrativo de Usuários (UI e Interações)', () =
         email: 'fernanda@cooperativa.org',
         role: USER_ROLES.PRESIDENTE_COOPERATIVA.id,
         organizationId: 'coop-2',
+        status: USER_STATUS.PENDING.id,
       });
     });
 
@@ -319,9 +331,12 @@ describe('Fluxo do Painel Administrativo de Usuários (UI e Interações)', () =
       expect(screen.getByDisplayValue('Mariana Silva')).toBeInTheDocument();
       expect(screen.getByDisplayValue('mariana@somosyby.com')).toBeInTheDocument();
 
-      // Altera o papel para Cliente
+      // Altera o papel para Cliente e o status para Inativo
       fireEvent.change(screen.getByLabelText(/^Papel/i), {
         target: { value: USER_ROLES.CLIENTE.id },
+      });
+      fireEvent.change(screen.getByLabelText(/^Status/i), {
+        target: { value: USER_STATUS.INACTIVE.id },
       });
 
       // Salva
@@ -333,6 +348,7 @@ describe('Fluxo do Painel Administrativo de Usuários (UI e Interações)', () =
         email: 'mariana@somosyby.com',
         role: USER_ROLES.CLIENTE.id,
         organizationId: 'coop-1',
+        status: USER_STATUS.INACTIVE.id,
       });
     });
   });

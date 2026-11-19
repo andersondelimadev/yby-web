@@ -1,7 +1,9 @@
 import React from 'react';
 import { Pencil, Trash2, Building2, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/ui/Button.jsx';
+import { Badge } from '@/shared/ui/Badge.jsx';
 import { UserRoleBadge } from './UserRoleBadge.jsx';
+import { getUserStatusMeta } from '@/domain/constants/userStatuses.js';
 
 export function UserTable({
   users = [],
@@ -20,13 +22,15 @@ export function UserTable({
             <tr className="bg-yby-surface/60 border-b border-yby-border text-xs font-bold text-yby-muted uppercase tracking-wider">
               <th className="py-3.5 px-4 min-w-[220px]">Usuário</th>
               <th className="py-3.5 px-4 min-w-[180px]">Papel</th>
-              <th className="py-3.5 px-4 min-w-[220px]">Organização Vinculada</th>
+              <th className="py-3.5 px-4 min-w-[210px]">Organização Vinculada</th>
+              <th className="py-3.5 px-4 min-w-[120px]">Status</th>
               <th className="py-3.5 px-4 text-center min-w-[110px]">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-yby-border/60 text-sm">
             {users.map((user, index) => {
               const isEven = index % 2 === 1;
+              const statusMeta = getUserStatusMeta(user.status);
               const initials = user.name
                 .split(' ')
                 .map((n) => n[0])
@@ -73,6 +77,11 @@ export function UserTable({
                         {user.organizationName || 'Não atribuída'}
                       </span>
                     </div>
+                  </td>
+
+                  {/* Status */}
+                  <td className="py-3.5 px-4">
+                    <Badge variant={statusMeta.badgeVariant}>{statusMeta.label}</Badge>
                   </td>
 
                   {/* Ações */}

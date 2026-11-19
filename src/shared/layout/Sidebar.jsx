@@ -6,7 +6,6 @@ import {
   Calendar,
   Folder,
   BarChart2,
-  Edit3,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -19,7 +18,7 @@ import { YbyIcon } from '@/shared/ui/YbyIcon.jsx';
 
 /**
  * Menu lateral retrátil e expansível do YBY.
- * Possui submenus em Cadastro e Edição (Cliente, Cooperativa, Gestor) sempre abertos
+ * Possui submenu em Cadastro (Cliente, Cooperativa, Usuário) sempre aberto
  * e área de perfil com foto, nome, login e configurações no rodapé.
  */
 export function Sidebar({ collapsed, onToggleCollapse, onItemClick, className = '' }) {
@@ -292,62 +291,6 @@ export function Sidebar({ collapsed, onToggleCollapse, onItemClick, className = 
                 </>
               )}
             </NavLink>
-
-            {/* 5. EDIÇÃO DE USUÁRIO com Submenu Permanente (Cliente, Cooperativa, Usuário) */}
-            <div>
-              <div
-                onClick={() => {
-                  if (collapsed) {
-                    onToggleCollapse();
-                  } else {
-                    navigate('/edicao?tab=cliente');
-                  }
-                  if (onItemClick) onItemClick();
-                }}
-                className={clsx(
-                  'flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer select-none',
-                  location.pathname.startsWith('/edicao')
-                    ? 'bg-yby-light/70 text-yby-primary font-bold'
-                    : 'text-yby-heading hover:bg-white/60 hover:text-yby-primary'
-                )}
-                title={collapsed ? 'Edição usuário' : undefined}
-              >
-                <div className="flex items-center gap-3.5">
-                  <Edit3 className="w-5 h-5 flex-shrink-0" />
-                  {!collapsed && <span className="whitespace-nowrap">Edição usuário</span>}
-                </div>
-              </div>
-
-              {/* Sub-itens de Edição */}
-              {!collapsed && (
-                <div className="pl-10 pr-2 pt-1 pb-1 space-y-1">
-                  {[
-                    { id: 'cliente', label: 'Cliente' },
-                    { id: 'cooperativa', label: 'Cooperativa' },
-                    { id: 'usuario', label: 'Usuário' },
-                  ].map((sub) => {
-                    const isSubActive =
-                      location.pathname.startsWith('/edicao') &&
-                      (currentTab === sub.id || (sub.id === 'usuario' && currentTab === 'gestor'));
-                    return (
-                      <NavLink
-                        key={sub.id}
-                        to={`/edicao?tab=${sub.id}`}
-                        onClick={onItemClick}
-                        className={clsx(
-                          'block px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
-                          isSubActive
-                            ? 'bg-yby-primary text-white shadow-sm font-bold'
-                            : 'text-yby-muted hover:text-yby-heading hover:bg-white/50'
-                        )}
-                      >
-                        {sub.label}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
           </nav>
         </div>
 
