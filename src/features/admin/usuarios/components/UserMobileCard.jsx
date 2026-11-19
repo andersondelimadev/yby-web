@@ -55,10 +55,10 @@ export function UserMobileCard({ user, onEdit, onDelete }) {
         </Button>
 
         <Button
-          variant="danger"
+          variant="danger-outline"
           size="sm"
           onClick={() => onDelete(user)}
-          className="flex-1 min-h-[44px] bg-red-50 text-yby-danger border border-red-200 hover:bg-red-100"
+          className="flex-1 min-h-[44px]"
           aria-label={`Excluir usuário ${user.name}`}
         >
           <Trash2 className="w-4 h-4 mr-1.5" />

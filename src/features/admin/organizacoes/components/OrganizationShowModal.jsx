@@ -151,10 +151,9 @@ export function OrganizationShowModal({
 
               <Button
                 type="button"
-                variant="danger"
+                variant="danger-outline"
                 size="sm"
                 onClick={() => onDelete(organization)}
-                className="bg-red-50 text-yby-danger border border-red-200 hover:bg-red-100"
               >
                 <Trash2 className="w-4 h-4 mr-1.5" />
                 Excluir

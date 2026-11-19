@@ -4,7 +4,7 @@ import clsx from 'clsx';
 /**
  * Botão base do Design System YBY.
  * @param {object} props
- * @param {'primary'|'secondary'|'outline'|'ghost'|'danger'} [props.variant='primary']
+ * @param {'primary'|'secondary'|'outline'|'ghost'|'danger'|'danger-outline'} [props.variant='primary']
  * @param {'sm'|'md'|'lg'} [props.size='md']
  * @param {boolean} [props.fullWidth=false]
  * @param {boolean} [props.loading=false]
@@ -33,6 +33,8 @@ export function Button({
       'bg-transparent text-yby-heading hover:bg-yby-surface border border-transparent focus:ring-yby-primary hover:translate-y-0',
     danger:
       'bg-yby-danger text-white hover:bg-red-700 hover:shadow-md focus:ring-yby-danger border border-transparent shadow-sm',
+    'danger-outline':
+      'bg-red-50 text-yby-danger hover:bg-red-100 border border-red-200 focus:ring-yby-danger shadow-sm',
   };
 
   const sizes = {

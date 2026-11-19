@@ -121,10 +121,10 @@ export function OrganizationMobileCard({ org, onShow, onEdit, onDelete, onToggle
         </Button>
 
         <Button
-          variant="danger"
+          variant="danger-outline"
           size="sm"
           onClick={() => onDelete(org)}
-          className="min-h-[44px] px-2 text-xs bg-red-50 text-yby-danger border border-red-200 hover:bg-red-100"
+          className="min-h-[44px] px-2 text-xs"
         >
           <Trash2 className="w-4 h-4 mr-1 shrink-0" />
           Excluir
