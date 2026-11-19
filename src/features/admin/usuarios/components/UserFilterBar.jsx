@@ -29,9 +29,9 @@ export function UserFilterBar({ filters, organizations = [] }) {
 
   return (
     <div className="bg-yby-surface p-4 sm:p-5 rounded-2xl border border-yby-border mb-6 transition-all duration-300 ease-out hover:shadow-card hover:border-yby-primary/30 cursor-default">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
         {/* Campo de Busca */}
-        <div className="space-y-1">
+        <div className="space-y-1.5 lg:col-span-4">
           <label className="text-xs font-semibold text-yby-heading block">
             Buscar usuário
           </label>
@@ -42,7 +42,7 @@ export function UserFilterBar({ filters, organizations = [] }) {
               value={filters.search}
               onChange={(e) => filters.setSearch(e.target.value)}
               placeholder="Nome, e-mail ou organização"
-              className="w-full pl-9 pr-3 py-2 text-xs md:text-sm bg-white rounded-xl border border-yby-border hover:border-yby-primary hover:transition-none transition-none focus:outline-none focus:border-yby-primary focus:transition-none shadow-sm min-h-[44px]"
+              className="w-full pl-9 pr-3 py-2 text-xs md:text-sm bg-white rounded-xl border border-yby-border hover:border-yby-primary hover:transition-none transition-none focus:outline-none focus:border-yby-primary focus:transition-none shadow-sm h-[44px]"
             />
           </div>
         </div>
@@ -54,6 +54,8 @@ export function UserFilterBar({ filters, organizations = [] }) {
           value={filters.organizationId}
           onChange={(e) => filters.setOrganizationId(e.target.value)}
           placeholder={null}
+          className="lg:col-span-3"
+          selectClassName="h-[44px] truncate"
         />
 
         {/* Filtro por Papel */}
@@ -63,6 +65,8 @@ export function UserFilterBar({ filters, organizations = [] }) {
           value={filters.role}
           onChange={(e) => filters.setRole(e.target.value)}
           placeholder={null}
+          className="lg:col-span-3"
+          selectClassName="h-[44px] truncate"
         />
 
         {/* Filtro por Status */}
@@ -72,6 +76,8 @@ export function UserFilterBar({ filters, organizations = [] }) {
           value={activeStatus}
           onChange={(e) => filters.setStatus?.(e.target.value)}
           placeholder={null}
+          className="lg:col-span-2"
+          selectClassName="h-[44px] truncate"
         />
       </div>
 
