@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, Building2, Truck, Sprout, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, Pencil, Trash2, Building2, Truck, Sprout, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
 import { ORGANIZATION_TYPES, ORGANIZATION_STATUS } from '@/domain/constants/organizationTypes.js';
@@ -10,6 +10,7 @@ export function OrganizationTable({
   currentPage = 1,
   totalPages = 1,
   onPageChange,
+  onShow,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -67,13 +68,18 @@ export function OrganizationTable({
                           <Building2 className="w-4 h-4" />
                         )}
                       </div>
-                      <p
-                        className={`font-bold leading-tight ${
-                          isActive ? 'text-yby-heading' : 'text-gray-600'
+                      <button
+                        type="button"
+                        onClick={() => onShow?.(org)}
+                        className={`font-bold leading-tight text-left hover:underline transition-colors ${
+                          isActive
+                            ? 'text-yby-heading hover:text-yby-primary'
+                            : 'text-gray-600 hover:text-gray-800'
                         }`}
+                        title="Visualizar detalhes da organização"
                       >
                         {org.name}
-                      </p>
+                      </button>
                     </div>
                   </td>
 
@@ -139,9 +145,20 @@ export function OrganizationTable({
                     <div className="flex items-center justify-center gap-2">
                       <button
                         type="button"
+                        onClick={() => onShow?.(org)}
+                        className="p-1.5 rounded-lg text-yby-muted hover:text-yby-primary hover:bg-yby-tint/60 transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm"
+                        title="Visualizar organização"
+                        aria-label={`Visualizar ${org.name}`}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => onEdit(org)}
                         className="p-1.5 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-white transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm"
                         title="Editar organização"
+                        aria-label={`Editar ${org.name}`}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
@@ -151,6 +168,7 @@ export function OrganizationTable({
                         onClick={() => onDelete(org)}
                         className="p-1.5 rounded-lg text-yby-danger/80 hover:text-yby-danger hover:bg-red-50 transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm"
                         title="Excluir organização"
+                        aria-label={`Excluir ${org.name}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

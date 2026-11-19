@@ -1,10 +1,10 @@
 import React from 'react';
-import { Pencil, Trash2, Building2, Truck, Sprout } from 'lucide-react';
+import { Eye, Pencil, Trash2, Building2, Truck, Sprout } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
 import { ORGANIZATION_TYPES, ORGANIZATION_STATUS } from '@/domain/constants/organizationTypes.js';
 
-export function OrganizationMobileCard({ org, onEdit, onDelete, onToggleStatus }) {
+export function OrganizationMobileCard({ org, onShow, onEdit, onDelete, onToggleStatus }) {
   const isYby = org.type === ORGANIZATION_TYPES.YBY;
   const isCooperativa = org.type === ORGANIZATION_TYPES.COOPERATIVA;
   const isActive = org.status === ORGANIZATION_STATUS.ATIVA;
@@ -99,14 +99,24 @@ export function OrganizationMobileCard({ org, onEdit, onDelete, onToggleStatus }
       </div>
 
       {/* Ações Mobile com Tap Targets amplos (>= 44px) */}
-      <div className="flex items-center gap-2 pt-2 border-t border-yby-border/60">
+      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-yby-border/60">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onShow?.(org)}
+          className="min-h-[44px] px-2 text-xs border-yby-primary/30 text-yby-primary hover:bg-yby-tint/40"
+        >
+          <Eye className="w-4 h-4 mr-1 shrink-0" />
+          Detalhes
+        </Button>
+
         <Button
           variant="outline"
           size="sm"
           onClick={() => onEdit(org)}
-          className="flex-1 min-h-[44px]"
+          className="min-h-[44px] px-2 text-xs"
         >
-          <Pencil className="w-4 h-4 mr-1.5" />
+          <Pencil className="w-4 h-4 mr-1 shrink-0" />
           Editar
         </Button>
 
@@ -114,9 +124,9 @@ export function OrganizationMobileCard({ org, onEdit, onDelete, onToggleStatus }
           variant="danger"
           size="sm"
           onClick={() => onDelete(org)}
-          className="flex-1 min-h-[44px] bg-red-50 text-yby-danger border border-red-200 hover:bg-red-100"
+          className="min-h-[44px] px-2 text-xs bg-red-50 text-yby-danger border border-red-200 hover:bg-red-100"
         >
-          <Trash2 className="w-4 h-4 mr-1.5" />
+          <Trash2 className="w-4 h-4 mr-1 shrink-0" />
           Excluir
         </Button>
       </div>

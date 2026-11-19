@@ -9,6 +9,7 @@ import { OrganizationFilterBar } from './components/OrganizationFilterBar.jsx';
 import { OrganizationTable } from './components/OrganizationTable.jsx';
 import { OrganizationMobileCard } from './components/OrganizationMobileCard.jsx';
 import { OrganizationModal } from './components/OrganizationModal.jsx';
+import { OrganizationShowModal } from './components/OrganizationShowModal.jsx';
 import { DeleteOrganizationModal } from './components/DeleteOrganizationModal.jsx';
 
 export function OrganizacoesPage() {
@@ -75,6 +76,7 @@ export function OrganizacoesPage() {
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
+              onShow={(org) => modals.setViewingOrg(org)}
               onEdit={(org) => modals.setEditingOrg(org)}
               onDelete={(org) => modals.setDeletingOrg(org)}
               onToggleStatus={actions.handleToggleStatus}
@@ -87,6 +89,7 @@ export function OrganizacoesPage() {
               <OrganizationMobileCard
                 key={org.id}
                 org={org}
+                onShow={(o) => modals.setViewingOrg(o)}
                 onEdit={(o) => modals.setEditingOrg(o)}
                 onDelete={(o) => modals.setDeletingOrg(o)}
                 onToggleStatus={actions.handleToggleStatus}
@@ -141,6 +144,19 @@ export function OrganizacoesPage() {
           organization={modals.deletingOrg}
           onClose={() => modals.setDeletingOrg(null)}
           onConfirm={actions.handleDelete}
+        />
+      )}
+
+      {modals.viewingOrg && !modals.editingOrg && !modals.deletingOrg && !modals.isCreating && (
+        <OrganizationShowModal
+          organization={modals.viewingOrg}
+          saving={saving}
+          onClose={() => modals.setViewingOrg(null)}
+          onEdit={(org) => modals.setEditingOrg(org)}
+          onDelete={(org) => modals.setDeletingOrg(org)}
+          onAddCollectionPoint={actions.handleAddCollectionPoint}
+          onUpdateCollectionPoint={actions.handleUpdateCollectionPoint}
+          onDeleteCollectionPoint={actions.handleDeleteCollectionPoint}
         />
       )}
     </div>

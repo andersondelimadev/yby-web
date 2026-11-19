@@ -77,4 +77,39 @@ describe('organizationRepository - Gestão de Organizações', () => {
     const check = await organizationRepository.getById(created.id);
     expect(check).toBeNull();
   });
+
+  it('deve adicionar, editar e excluir pontos de coleta de uma organização', async () => {
+    const createdOrg = await organizationRepository.create({
+      name: 'Cliente Pontos Teste',
+      cnpj: '99.888.777/0001-66',
+      type: ORGANIZATION_TYPES.CLIENTE,
+    });
+    expect(createdOrg.created_at).toBeDefined();
+    expect(createdOrg.collectionPoints).toEqual([]);
+
+    const withPoint = await organizationRepository.addCollectionPoint(createdOrg.id, {
+      nickname: 'Portaria Sul',
+      zip_code: '60160-230',
+      address: 'Rua Desembargador Leite Albuquerque',
+      number: '500',
+      neighborhood: 'Aldeota',
+      city: 'Fortaleza',
+      state: 'CE',
+      active: true,
+    });
+    expect(withPoint.collectionPoints).toHaveLength(1);
+    const pointId = withPoint.collectionPoints[0].id;
+    expect(withPoint.collectionPoints[0].nickname).toBe('Portaria Sul');
+    expect(withPoint.collectionPoints[0].active).toBe(true);
+
+    const updated = await organizationRepository.updateCollectionPoint(createdOrg.id, pointId, {
+      nickname: 'Portaria Norte',
+      active: false,
+    });
+    expect(updated.collectionPoints[0].nickname).toBe('Portaria Norte');
+    expect(updated.collectionPoints[0].active).toBe(false);
+
+    const afterDelete = await organizationRepository.deleteCollectionPoint(createdOrg.id, pointId);
+    expect(afterDelete.collectionPoints).toHaveLength(0);
+  });
 });

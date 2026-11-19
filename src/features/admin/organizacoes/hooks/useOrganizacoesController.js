@@ -18,8 +18,16 @@ export function useOrganizacoesController() {
 
   // Modais
   const [isCreating, setIsCreating] = useState(false);
+  const [viewingOrg, setViewingOrg] = useState(null);
   const [editingOrg, setEditingOrg] = useState(null);
   const [deletingOrg, setDeletingOrg] = useState(null);
+
+  const syncUpdatedOrganization = (updatedOrg) => {
+    setOrganizations((prev) =>
+      prev.map((item) => (item.id === updatedOrg.id ? updatedOrg : item))
+    );
+    setViewingOrg((prev) => (prev?.id === updatedOrg.id ? updatedOrg : prev));
+  };
 
   const fetchOrganizations = async () => {
     try {
@@ -41,9 +49,7 @@ export function useOrganizacoesController() {
   const handleToggleStatus = async (org) => {
     try {
       const updated = await organizationRepository.toggleStatus(org.id);
-      setOrganizations((prev) =>
-        prev.map((item) => (item.id === org.id ? { ...item, status: updated.status } : item))
-      );
+      syncUpdatedOrganization(updated);
       toast.success(
         `Status da organização "${org.shortName || org.name}" alterado para ${updated.status}.`
       );
@@ -57,9 +63,7 @@ export function useOrganizacoesController() {
       setSaving(true);
       if (editingOrg) {
         const updated = await organizationRepository.update(editingOrg.id, formData);
-        setOrganizations((prev) =>
-          prev.map((item) => (item.id === editingOrg.id ? updated : item))
-        );
+        syncUpdatedOrganization(updated);
         toast.success(`Organização "${updated.name}" atualizada com sucesso!`);
         setEditingOrg(null);
       } else {
@@ -80,11 +84,63 @@ export function useOrganizacoesController() {
     try {
       await organizationRepository.delete(deletingOrg.id);
       setOrganizations((prev) => prev.filter((item) => item.id !== deletingOrg.id));
+      if (viewingOrg?.id === deletingOrg.id) {
+        setViewingOrg(null);
+      }
       toast.success(`Organização "${deletingOrg.name}" excluída com sucesso.`);
     } catch (err) {
       toast.error('Erro ao excluir organização.');
     } finally {
       setDeletingOrg(null);
+    }
+  };
+
+  const handleAddCollectionPoint = async (orgId, pointData) => {
+    try {
+      setSaving(true);
+      const updatedOrg = await organizationRepository.addCollectionPoint(orgId, pointData);
+      syncUpdatedOrganization(updatedOrg);
+      toast.success(`Ponto de coleta "${pointData.nickname}" adicionado com sucesso!`);
+      return updatedOrg;
+    } catch (err) {
+      toast.error('Erro ao adicionar ponto de coleta.');
+      throw err;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdateCollectionPoint = async (orgId, pointId, pointData) => {
+    try {
+      setSaving(true);
+      const updatedOrg = await organizationRepository.updateCollectionPoint(
+        orgId,
+        pointId,
+        pointData
+      );
+      syncUpdatedOrganization(updatedOrg);
+      toast.success(`Ponto de coleta "${pointData.nickname}" atualizado com sucesso!`);
+      return updatedOrg;
+    } catch (err) {
+      toast.error('Erro ao atualizar ponto de coleta.');
+      throw err;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteCollectionPoint = async (orgId, pointId) => {
+    try {
+      setSaving(true);
+      const updatedOrg = await organizationRepository.deleteCollectionPoint(orgId, pointId);
+      syncUpdatedOrganization(updatedOrg);
+      toast.success('Ponto de coleta excluído com sucesso.');
+      return updatedOrg;
+    } catch (err) {
+      toast.error('Erro ao excluir ponto de coleta.');
+      throw err;
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -122,6 +178,8 @@ export function useOrganizacoesController() {
     modals: {
       isCreating,
       setIsCreating,
+      viewingOrg,
+      setViewingOrg,
       editingOrg,
       setEditingOrg,
       deletingOrg,
@@ -131,6 +189,9 @@ export function useOrganizacoesController() {
       handleToggleStatus,
       handleSave,
       handleDelete,
+      handleAddCollectionPoint,
+      handleUpdateCollectionPoint,
+      handleDeleteCollectionPoint,
       refresh: fetchOrganizations,
     },
   };

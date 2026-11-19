@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { OrganizationTable } from '../components/OrganizationTable.jsx';
 import { OrganizationMobileCard } from '../components/OrganizationMobileCard.jsx';
@@ -117,5 +117,23 @@ describe('OrganizationTable & OrganizationMobileCard - Destaque de Organização
     const ybyBadge = screen.getByText('YBY');
     expect(ybyBadge).toBeInTheDocument();
     expect(ybyBadge.closest('span')).toHaveClass('text-yby-primary');
+  });
+
+  it('deve acionar onShow ao clicar no botão de visualizar detalhes da organização', () => {
+    const handleShow = vi.fn();
+
+    render(
+      <OrganizationTable
+        organizations={mockOrganizations}
+        onShow={handleShow}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onToggleStatus={vi.fn()}
+      />
+    );
+
+    const viewButton = screen.getByRole('button', { name: 'Visualizar Yby Soluções Sustentáveis' });
+    fireEvent.click(viewButton);
+    expect(handleShow).toHaveBeenCalledWith(mockOrganizations[0]);
   });
 });
