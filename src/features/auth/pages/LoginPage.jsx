@@ -1,41 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
 import { AuthSplitLayout } from '../components/AuthSplitLayout.jsx';
 import { InputField } from '@/shared/ui/InputField.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
+import { useLoginController } from '../hooks/useLoginController.js';
 
 export function LoginPage() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@somosyby.com');
-  const [password, setPassword] = useState('123456');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    setTimeout(() => {
-      // Simula login de sucesso guardando perfil no localStorage
-      localStorage.setItem(
-        'usuario',
-        JSON.stringify({
-          jwt: 'mock-jwt-token',
-          user: {
-            id: 1,
-            username: 'admin',
-            email,
-            isAdmin: true,
-          },
-        })
-      );
-      setLoading(false);
-      toast.success('Login realizado com sucesso! Bem-vindo(a) ao YBY.');
-      navigate('/dashboard');
-    }, 600);
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    showPassword,
+    toggleShowPassword,
+    loading,
+    handleSubmit,
+  } = useLoginController();
 
   return (
     <AuthSplitLayout
@@ -56,7 +37,8 @@ export function LoginPage() {
         <InputField
           label="E-mail"
           required
-          type="email"
+          type="text"
+          autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="seu@email.com.br"
@@ -67,13 +49,14 @@ export function LoginPage() {
             label="Senha"
             required
             type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Digite sua senha"
             rightElement={
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={toggleShowPassword}
                 className="text-yby-muted hover:text-yby-heading p-1"
                 tabIndex={-1}
               >
@@ -102,15 +85,6 @@ export function LoginPage() {
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </form>
-
-      <div className="mt-6 pt-6 border-t border-yby-border/60 text-center">
-        <Link
-          to="/signIn-client"
-          className="text-xs font-semibold text-yby-muted hover:text-yby-primary transition-colors"
-        >
-          Acessar como cooperativa (Código de acesso)
-        </Link>
-      </div>
     </AuthSplitLayout>
   );
 }

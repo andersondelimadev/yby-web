@@ -9,7 +9,6 @@ const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage.jsx').then(
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage.jsx').then(m => ({ default: m.ForgotPasswordPage })));
 const VerifyEmailPage = lazy(() => import('@/features/auth/pages/VerifyEmailPage.jsx').then(m => ({ default: m.VerifyEmailPage })));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage.jsx').then(m => ({ default: m.ResetPasswordPage })));
-const CooperativeLoginPage = lazy(() => import('@/features/auth/pages/CooperativeLoginPage.jsx').then(m => ({ default: m.CooperativeLoginPage })));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage.jsx').then(m => ({ default: m.DashboardPage })));
 const PlanejamentoPage = lazy(() => import('@/features/planejamento/PlanejamentoPage.jsx').then(m => ({ default: m.PlanejamentoPage })));
 const RelatoriosPage = lazy(() => import('@/features/relatorios/RelatoriosPage.jsx').then(m => ({ default: m.RelatoriosPage })));
@@ -35,7 +34,7 @@ export function AppRoutes() {
         {/* Rotas Públicas */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/signIn" element={<LoginPage />} />
-        <Route path="/signIn-client" element={<CooperativeLoginPage />} />
+        <Route path="/signIn-client" element={<Navigate to="/signIn" replace />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />

@@ -46,7 +46,10 @@ export function PontoColetaPage() {
       <div className="flex items-center justify-between">
         <button
           type="button"
-          onClick={() => navigate('/signIn-client')}
+          onClick={() => {
+            localStorage.removeItem('usuario');
+            navigate('/signIn');
+          }}
           className="inline-flex items-center text-xs font-semibold text-yby-muted hover:text-yby-primary"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />

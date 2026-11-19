@@ -75,7 +75,7 @@ export function getRolePermissions(user = {}) {
     canEditCollections: false,
     canDeleteCollections: false,
     canExportReports: false,
-    allowedRoutes: ['/', '/signIn', '/signIn-client', '/forgot-password', '/reset-password'],
+    allowedRoutes: ['/', '/signIn', '/forgot-password', '/reset-password'],
     homeRoute: '/',
   };
 }
