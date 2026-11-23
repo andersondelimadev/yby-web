@@ -1,7 +1,8 @@
 import React from 'react';
-import { Eye, Pencil, Trash2, Building2, Truck, Sprout } from 'lucide-react';
+import { Eye, Pencil, Trash2, Building2, Truck } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
+import { YbyIcon } from '@/shared/ui/YbyIcon.jsx';
 import { ORGANIZATION_TYPES, ORGANIZATION_STATUS } from '@/domain/constants/organizationTypes.js';
 
 export function OrganizationMobileCard({ org, onShow, onEdit, onDelete, onToggleStatus }) {
@@ -32,7 +33,10 @@ export function OrganizationMobileCard({ org, onShow, onEdit, onDelete, onToggle
             }`}
           >
             {isYby ? (
-              <Sprout className="w-4 h-4" />
+              <YbyIcon
+                variant="green"
+                className={`w-5 h-5 ${!isActive ? 'grayscale opacity-60' : ''}`}
+              />
             ) : isCooperativa ? (
               <Truck className="w-4 h-4" />
             ) : (

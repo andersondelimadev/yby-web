@@ -117,6 +117,10 @@ describe('OrganizationTable & OrganizationMobileCard - Destaque de Organização
     const ybyBadge = screen.getByText('YBY');
     expect(ybyBadge).toBeInTheDocument();
     expect(ybyBadge.closest('span')).toHaveClass('text-yby-primary');
+
+    const ybyImg = screen.getByAltText('YBY');
+    expect(ybyImg).toBeInTheDocument();
+    expect(ybyImg).toHaveAttribute('src', '/yby-icon-green.png');
   });
 
   it('deve acionar onShow ao clicar no botão de visualizar detalhes da organização', () => {

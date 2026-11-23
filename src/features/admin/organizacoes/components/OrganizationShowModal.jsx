@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, Building2, Truck, Sprout, Pencil, Trash2, Calendar } from 'lucide-react';
+import { X, Building2, Truck, Pencil, Trash2, Calendar } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
+import { YbyIcon } from '@/shared/ui/YbyIcon.jsx';
 import { ORGANIZATION_TYPES } from '@/domain/constants/organizationTypes.js';
 import { CollectionPointsSection } from './CollectionPointsSection.jsx';
 
@@ -61,7 +62,7 @@ export function OrganizationShowModal({
               }`}
             >
               {isYby ? (
-                <Sprout className="w-5 h-5" />
+                <YbyIcon variant="green" className="w-6 h-6" />
               ) : isCooperativa ? (
                 <Truck className="w-5 h-5" />
               ) : (

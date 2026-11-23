@@ -2,6 +2,7 @@ import React from 'react';
 import { Pencil, Trash2, Building2, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/ui/Button.jsx';
 import { Badge } from '@/shared/ui/Badge.jsx';
+import { YbyIcon } from '@/shared/ui/YbyIcon.jsx';
 import { UserRoleBadge } from './UserRoleBadge.jsx';
 import { getUserStatusMeta } from '@/domain/constants/userStatuses.js';
 
@@ -66,8 +67,11 @@ export function UserTable({
                   {/* Organização Vinculada */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-yby-muted flex-shrink-0">
-                        {user.organizationType === 'Cooperativa' ? (
+                      <span className="text-yby-muted flex-shrink-0 flex items-center">
+                        {user.organizationType === 'YBY' ||
+                        user.organizationName?.toLowerCase().includes('yby') ? (
+                          <YbyIcon variant="green" className="w-4 h-4" />
+                        ) : user.organizationType === 'Cooperativa' ? (
                           <Truck className="w-4 h-4 text-yby-primary" />
                         ) : (
                           <Building2 className="w-4 h-4 text-yby-muted" />
