@@ -4,6 +4,7 @@ import { organizationRepository } from '@/services/repositories/organizationRepo
 
 export function useOrganizacoesController() {
   const [organizations, setOrganizations] = useState([]);
+  const [allOrganizations, setAllOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -21,9 +22,13 @@ export function useOrganizacoesController() {
   const [viewingOrg, setViewingOrg] = useState(null);
   const [editingOrg, setEditingOrg] = useState(null);
   const [deletingOrg, setDeletingOrg] = useState(null);
+  const [pointModalState, setPointModalState] = useState(null);
 
   const syncUpdatedOrganization = (updatedOrg) => {
     setOrganizations((prev) =>
+      prev.map((item) => (item.id === updatedOrg.id ? updatedOrg : item))
+    );
+    setAllOrganizations((prev) =>
       prev.map((item) => (item.id === updatedOrg.id ? updatedOrg : item))
     );
     setViewingOrg((prev) => (prev?.id === updatedOrg.id ? updatedOrg : prev));
@@ -32,8 +37,19 @@ export function useOrganizacoesController() {
   const fetchOrganizations = async () => {
     try {
       setLoading(true);
-      const data = await organizationRepository.getAll({ search, type, status });
-      setOrganizations(data);
+      const hasActiveFilters = Boolean(search) || type !== 'Todas' || status !== 'Todos';
+      if (hasActiveFilters) {
+        const [filteredData, fullData] = await Promise.all([
+          organizationRepository.getAll({ search, type, status }),
+          organizationRepository.getAll(),
+        ]);
+        setOrganizations(filteredData);
+        setAllOrganizations(fullData);
+      } else {
+        const data = await organizationRepository.getAll();
+        setOrganizations(data);
+        setAllOrganizations(data);
+      }
     } catch (err) {
       toast.error('Erro ao carregar organizações.');
     } finally {
@@ -69,6 +85,7 @@ export function useOrganizacoesController() {
       } else {
         const created = await organizationRepository.create(formData);
         setOrganizations((prev) => [created, ...prev]);
+        setAllOrganizations((prev) => [created, ...prev]);
         toast.success(`Organização "${created.name}" cadastrada com sucesso!`);
         setIsCreating(false);
       }
@@ -84,6 +101,7 @@ export function useOrganizacoesController() {
     try {
       await organizationRepository.delete(deletingOrg.id);
       setOrganizations((prev) => prev.filter((item) => item.id !== deletingOrg.id));
+      setAllOrganizations((prev) => prev.filter((item) => item.id !== deletingOrg.id));
       if (viewingOrg?.id === deletingOrg.id) {
         setViewingOrg(null);
       }
@@ -129,6 +147,15 @@ export function useOrganizacoesController() {
     }
   };
 
+  const handleSaveCollectionPoint = async (targetOrgId, formData) => {
+    if (pointModalState?.mode === 'edit' && pointModalState?.point) {
+      await handleUpdateCollectionPoint(targetOrgId, pointModalState.point.id, formData);
+    } else {
+      await handleAddCollectionPoint(targetOrgId, formData);
+    }
+    setPointModalState(null);
+  };
+
   const handleDeleteCollectionPoint = async (orgId, pointId) => {
     try {
       setSaving(true);
@@ -160,6 +187,7 @@ export function useOrganizacoesController() {
 
   return {
     organizations: paginatedOrgs,
+    allOrganizations,
     totalItems,
     totalPages,
     currentPage,
@@ -184,11 +212,14 @@ export function useOrganizacoesController() {
       setEditingOrg,
       deletingOrg,
       setDeletingOrg,
+      pointModalState,
+      setPointModalState,
     },
     actions: {
       handleToggleStatus,
       handleSave,
       handleDelete,
+      handleSaveCollectionPoint,
       handleAddCollectionPoint,
       handleUpdateCollectionPoint,
       handleDeleteCollectionPoint,

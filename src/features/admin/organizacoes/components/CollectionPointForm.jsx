@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 import { InputField } from '@/shared/ui/InputField.jsx';
+import { SelectField } from '@/shared/ui/SelectField.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
 import { useCepLookup } from '@/shared/hooks/useCepLookup.js';
 
@@ -16,13 +17,26 @@ const EMPTY_FORM = {
 };
 
 /**
- * Formulário integrado (inline dentro do Modal Show) para criar ou editar
- * um Ponto de Coleta vinculado a uma organização.
+ * Formulário modular para criar ou editar um Ponto de Coleta.
+ * Quando aberto fora da Show (botão global), exibe o seletor de Organização.
  * Inclui máscara e consulta automática de CEP via ViaCEP.
  */
-export function CollectionPointForm({ point, saving = false, onCancel, onSave }) {
+export function CollectionPointForm({
+  point = null,
+  organizations = [],
+  showOrganizationSelect = false,
+  initialOrganizationId = '',
+  saving = false,
+  onCancel,
+  onSave,
+}) {
   const isEditing = Boolean(point);
+  const [selectedOrgId, setSelectedOrgId] = useState(initialOrganizationId || '');
   const [formData, setFormData] = useState(EMPTY_FORM);
+
+  useEffect(() => {
+    setSelectedOrgId(initialOrganizationId || '');
+  }, [initialOrganizationId]);
 
   useEffect(() => {
     if (point) {
@@ -74,36 +88,38 @@ export function CollectionPointForm({ point, saving = false, onCancel, onSave })
     }
   };
 
+  const orgOptions = organizations.map((o) => ({
+    value: o.id,
+    label: `${o.name} (${o.type})`,
+  }));
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.nickname.trim() || !formData.zip_code.trim() || !formData.address.trim()) {
+    if (showOrganizationSelect && !selectedOrgId) {
+      toast.error('Selecione uma organização para vincular o ponto de coleta.');
       return;
     }
-    onSave(formData);
+    if (!formData.nickname.trim() || !formData.zip_code.trim() || !formData.address.trim()) {
+      toast.error('Preencha os campos obrigatórios do ponto de coleta.');
+      return;
+    }
+    onSave(formData, selectedOrgId);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Cabeçalho de Navegação Interna */}
-      <div className="flex items-center justify-between gap-3 pb-3 border-b border-yby-border/60">
-        <div>
-          <h4 className="text-base font-extrabold text-yby-heading">
-            {isEditing ? 'Editar Ponto de Coleta' : 'Novo Ponto de Coleta'}
-          </h4>
-          <p className="text-xs text-yby-muted">
-            {isEditing
-              ? 'Atualize o endereço ou status de atividade deste ponto'
-              : 'Preencha os dados de localização do ponto de coleta'}
-          </p>
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {showOrganizationSelect && (
+        <SelectField
+          label="Organização"
+          required
+          options={orgOptions}
+          value={selectedOrgId}
+          onChange={(e) => setSelectedOrgId(e.target.value)}
+          placeholder="Selecione uma organização..."
+        />
+      )}
 
-        <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
-          <ArrowLeft className="w-4 h-4 mr-1.5" />
-          Voltar à lista
-        </Button>
-      </div>
-
-      {/* Campos Principais */}
+      {/* Campos do Ponto de Coleta */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="sm:col-span-2 lg:col-span-2">
           <InputField

@@ -30,8 +30,8 @@ export function OrganizationShowModal({
   onClose,
   onEdit,
   onDelete,
-  onAddCollectionPoint,
-  onUpdateCollectionPoint,
+  onRequestAddPoint,
+  onRequestEditPoint,
   onDeleteCollectionPoint,
 }) {
   if (!organization) return null;
@@ -166,8 +166,8 @@ export function OrganizationShowModal({
             organizationId={organization.id}
             points={organization.collectionPoints || []}
             saving={saving}
-            onAddPoint={onAddCollectionPoint}
-            onUpdatePoint={onUpdateCollectionPoint}
+            onRequestAddPoint={onRequestAddPoint}
+            onRequestEditPoint={onRequestEditPoint}
             onDeletePoint={onDeleteCollectionPoint}
           />
         </div>

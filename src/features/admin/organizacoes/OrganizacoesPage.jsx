@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Building2 } from 'lucide-react';
+import { Plus, Building2, MapPin } from 'lucide-react';
 import { useOrganizacoesController } from './hooks/useOrganizacoesController.js';
 import { PageHeader } from '@/shared/layout/PageHeader.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
@@ -10,11 +10,13 @@ import { OrganizationTable } from './components/OrganizationTable.jsx';
 import { OrganizationMobileCard } from './components/OrganizationMobileCard.jsx';
 import { OrganizationModal } from './components/OrganizationModal.jsx';
 import { OrganizationShowModal } from './components/OrganizationShowModal.jsx';
+import { CollectionPointModal } from './components/CollectionPointModal.jsx';
 import { DeleteOrganizationModal } from './components/DeleteOrganizationModal.jsx';
 
 export function OrganizacoesPage() {
   const {
     organizations,
+    allOrganizations,
     totalItems,
     totalPages,
     currentPage,
@@ -32,20 +34,34 @@ export function OrganizacoesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header com Ação de Adicionar Organização */}
+      {/* Header com Ações de Adicionar Ponto de Coleta e Organização */}
       <PageHeader
         title="Organizações"
         subtitle="Gerencie clientes e cooperativas conveniadas à plataforma Yby Impacta"
         actions={
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => modals.setIsCreating(true)}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar organização
-          </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() =>
+                modals.setPointModalState({ mode: 'create', organization: null, point: null })
+              }
+              className="w-full sm:w-auto whitespace-nowrap"
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Adicionar Ponto de Coleta
+            </Button>
+
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => modals.setIsCreating(true)}
+              className="w-full sm:w-auto whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar organização
+            </Button>
+          </div>
         }
       />
 
@@ -147,16 +163,43 @@ export function OrganizacoesPage() {
         />
       )}
 
-      {modals.viewingOrg && !modals.editingOrg && !modals.deletingOrg && !modals.isCreating && (
-        <OrganizationShowModal
-          organization={modals.viewingOrg}
+      {modals.viewingOrg &&
+        !modals.editingOrg &&
+        !modals.deletingOrg &&
+        !modals.isCreating &&
+        !modals.pointModalState && (
+          <OrganizationShowModal
+            organization={modals.viewingOrg}
+            saving={saving}
+            onClose={() => modals.setViewingOrg(null)}
+            onEdit={(org) => modals.setEditingOrg(org)}
+            onDelete={(org) => modals.setDeletingOrg(org)}
+            onRequestAddPoint={() =>
+              modals.setPointModalState({
+                mode: 'create',
+                organization: modals.viewingOrg,
+                point: null,
+              })
+            }
+            onRequestEditPoint={(point) =>
+              modals.setPointModalState({
+                mode: 'edit',
+                organization: modals.viewingOrg,
+                point,
+              })
+            }
+            onDeleteCollectionPoint={actions.handleDeleteCollectionPoint}
+          />
+        )}
+
+      {modals.pointModalState && (
+        <CollectionPointModal
+          organization={modals.pointModalState.organization}
+          organizations={allOrganizations}
+          point={modals.pointModalState.point}
           saving={saving}
-          onClose={() => modals.setViewingOrg(null)}
-          onEdit={(org) => modals.setEditingOrg(org)}
-          onDelete={(org) => modals.setDeletingOrg(org)}
-          onAddCollectionPoint={actions.handleAddCollectionPoint}
-          onUpdateCollectionPoint={actions.handleUpdateCollectionPoint}
-          onDeleteCollectionPoint={actions.handleDeleteCollectionPoint}
+          onClose={() => modals.setPointModalState(null)}
+          onSave={actions.handleSaveCollectionPoint}
         />
       )}
     </div>

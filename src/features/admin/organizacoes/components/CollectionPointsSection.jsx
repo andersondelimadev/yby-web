@@ -2,55 +2,25 @@ import React, { useState } from 'react';
 import { MapPin, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
-import { CollectionPointForm } from './CollectionPointForm.jsx';
 
 /**
- * Seção de listagem e gerenciamento integrado (criar/editar/excluir)
- * de Pontos de Coleta dentro do Modal Show da Organização.
+ * Seção de listagem e ações de Pontos de Coleta dentro do Modal Show da Organização.
+ * Delega a abertura do formulário de criação/edição ao modal dedicado.
  */
 export function CollectionPointsSection({
   organizationId,
   points = [],
   saving = false,
-  onAddPoint,
-  onUpdatePoint,
+  onRequestAddPoint,
+  onRequestEditPoint,
   onDeletePoint,
 }) {
-  const [editingPoint, setEditingPoint] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-
-  const closeForm = () => {
-    setIsCreating(false);
-    setEditingPoint(null);
-  };
-
-  const handleSaveForm = async (formData) => {
-    if (editingPoint) {
-      await onUpdatePoint(organizationId, editingPoint.id, formData);
-    } else {
-      await onAddPoint(organizationId, formData);
-    }
-    closeForm();
-  };
 
   const handleConfirmDelete = async (pointId) => {
     await onDeletePoint(organizationId, pointId);
     setConfirmDeleteId(null);
   };
-
-  if (isCreating || editingPoint) {
-    return (
-      <div className="bg-white rounded-2xl border border-yby-border p-4 sm:p-5">
-        <CollectionPointForm
-          point={editingPoint}
-          saving={saving}
-          onCancel={closeForm}
-          onSave={handleSaveForm}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -66,7 +36,7 @@ export function CollectionPointsSection({
           type="button"
           variant="primary"
           size="sm"
-          onClick={() => setIsCreating(true)}
+          onClick={() => onRequestAddPoint?.()}
           className="w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-1.5" />
@@ -132,7 +102,7 @@ export function CollectionPointsSection({
                       type="button"
                       onClick={() => {
                         setConfirmDeleteId(null);
-                        setEditingPoint(point);
+                        onRequestEditPoint?.(point);
                       }}
                       className="p-2 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-yby-surface transition-colors"
                       title="Editar ponto de coleta"

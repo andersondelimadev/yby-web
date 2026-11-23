@@ -2,10 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OrganizationShowModal } from '../components/OrganizationShowModal.jsx';
+import { CollectionPointModal } from '../components/CollectionPointModal.jsx';
 import { ORGANIZATION_TYPES } from '@/domain/constants/organizationTypes.js';
 import { cepService } from '@/services/cepService.js';
 
-describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
+describe('OrganizationShowModal & CollectionPointModal dedicado', () => {
   const mockOrg = {
     id: 'client-1',
     name: 'Ticiana Rolim Empreendimentos',
@@ -27,20 +28,33 @@ describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
     ],
   };
 
+  const mockOrganizations = [
+    mockOrg,
+    {
+      id: 'coop-1',
+      name: 'Yby Soluções Sustentáveis',
+      type: ORGANIZATION_TYPES.YBY,
+    },
+  ];
+
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('deve exibir dados da organização (nome, CNPJ, tipo, criado em), botões Editar/Excluir e pontos de coleta', () => {
+  it('deve exibir dados da organização, delegar adição/edição ao modal dedicado e confirmar exclusão inline', async () => {
+    const onRequestAddPoint = vi.fn();
+    const onRequestEditPoint = vi.fn();
+    const onDeleteCollectionPoint = vi.fn().mockResolvedValueOnce({});
+
     render(
       <OrganizationShowModal
         organization={mockOrg}
         onClose={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-        onAddCollectionPoint={vi.fn()}
-        onUpdateCollectionPoint={vi.fn()}
-        onDeleteCollectionPoint={vi.fn()}
+        onRequestAddPoint={onRequestAddPoint}
+        onRequestEditPoint={onRequestEditPoint}
+        onDeleteCollectionPoint={onDeleteCollectionPoint}
       />
     );
 
@@ -52,13 +66,26 @@ describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
     expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Excluir' })).toBeInTheDocument();
 
-    expect(screen.getByText('Torre Aldeota')).toBeInTheDocument();
-    expect(screen.getByText(/Av\. Santos Dumont, 1200 — Aldeota/)).toBeInTheDocument();
-    expect(screen.getByText(/CEP: 60160-100/)).toBeInTheDocument();
-    expect(screen.getByText('Ativo')).toBeInTheDocument();
+    // Delega abertura do modal limpo de criação
+    fireEvent.click(screen.getByRole('button', { name: /Adicionar ponto de coleta/i }));
+    expect(onRequestAddPoint).toHaveBeenCalledTimes(1);
+
+    // Delega abertura do modal limpo de edição
+    fireEvent.click(screen.getByRole('button', { name: /Editar ponto Torre Aldeota/i }));
+    expect(onRequestEditPoint).toHaveBeenCalledWith(mockOrg.collectionPoints[0]);
+
+    // Excluir ponto com confirmação inline
+    fireEvent.click(screen.getByRole('button', { name: /Excluir ponto Torre Aldeota/i }));
+    expect(screen.getByText(/Deseja excluir o ponto "Torre Aldeota"\?/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar exclusão/i }));
+
+    await waitFor(() => {
+      expect(onDeleteCollectionPoint).toHaveBeenCalledWith('client-1', 'cp-1');
+    });
   });
 
-  it('deve abrir o formulário integrado de adicionar ponto de coleta, consultar CEP e enviar todos os campos', async () => {
+  it('deve permitir escolher a organização no CollectionPointModal ao adicionar pelo botão do topo', async () => {
     vi.spyOn(cepService, 'getAddressByCep').mockResolvedValueOnce({
       cep: '60170-220',
       street: 'Rua Júlio Ibiapina',
@@ -68,23 +95,24 @@ describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
       uf: 'CE',
     });
 
-    const onAdd = vi.fn().mockResolvedValueOnce({});
+    const onSave = vi.fn().mockResolvedValueOnce({});
 
     render(
-      <OrganizationShowModal
-        organization={mockOrg}
+      <CollectionPointModal
+        organization={null}
+        organizations={mockOrganizations}
+        point={null}
         onClose={vi.fn()}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-        onAddCollectionPoint={onAdd}
-        onUpdateCollectionPoint={vi.fn()}
-        onDeleteCollectionPoint={vi.fn()}
+        onSave={onSave}
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /Adicionar ponto de coleta/i }));
-
     expect(screen.getByText('Novo Ponto de Coleta')).toBeInTheDocument();
+
+    // Select de Organização disponível quando aberto pelo topo
+    const orgSelect = screen.getByLabelText(/Organização/i);
+    expect(orgSelect).toBeInTheDocument();
+    fireEvent.change(orgSelect, { target: { value: 'coop-1' } });
 
     fireEvent.change(screen.getByLabelText(/Apelido/i), {
       target: { value: 'Galpão Meireles' },
@@ -102,14 +130,13 @@ describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
       target: { value: '340' },
     });
 
-    // Alterna switch para Inativo
     const switchBtn = screen.getByRole('switch', { name: /Ponto de coleta ativo/i });
     fireEvent.click(switchBtn);
 
     fireEvent.click(screen.getByRole('button', { name: /Salvar ponto de coleta/i }));
 
     await waitFor(() => {
-      expect(onAdd).toHaveBeenCalledWith('client-1', {
+      expect(onSave).toHaveBeenCalledWith('coop-1', {
         nickname: 'Galpão Meireles',
         zip_code: '60170-220',
         address: 'Rua Júlio Ibiapina',
@@ -122,25 +149,22 @@ describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
     });
   });
 
-  it('deve editar e excluir um ponto de coleta com confirmação inline', async () => {
-    const onUpdate = vi.fn().mockResolvedValueOnce({});
-    const onDelete = vi.fn().mockResolvedValueOnce({});
+  it('deve exibir apenas o formulário limpo ao editar ponto pelo CollectionPointModal (sem resumo da organização)', async () => {
+    const onSave = vi.fn().mockResolvedValueOnce({});
 
     render(
-      <OrganizationShowModal
+      <CollectionPointModal
         organization={mockOrg}
+        organizations={mockOrganizations}
+        point={mockOrg.collectionPoints[0]}
         onClose={vi.fn()}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-        onAddCollectionPoint={vi.fn()}
-        onUpdateCollectionPoint={onUpdate}
-        onDeleteCollectionPoint={onDelete}
+        onSave={onSave}
       />
     );
 
-    // Editar ponto existente
-    fireEvent.click(screen.getByRole('button', { name: /Editar ponto Torre Aldeota/i }));
     expect(screen.getByText('Editar Ponto de Coleta')).toBeInTheDocument();
+    expect(screen.queryByText('12.345.678/0001-90')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Organização/i)).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/Apelido/i), {
       target: { value: 'Torre Aldeota - Entrada B' },
@@ -148,21 +172,10 @@ describe('OrganizationShowModal & Pontos de Coleta Integrados', () => {
     fireEvent.click(screen.getByRole('button', { name: /Salvar alterações/i }));
 
     await waitFor(() => {
-      expect(onUpdate).toHaveBeenCalledWith(
+      expect(onSave).toHaveBeenCalledWith(
         'client-1',
-        'cp-1',
         expect.objectContaining({ nickname: 'Torre Aldeota - Entrada B' })
       );
-    });
-
-    // Excluir ponto com confirmação inline
-    fireEvent.click(screen.getByRole('button', { name: /Excluir ponto Torre Aldeota/i }));
-    expect(screen.getByText(/Deseja excluir o ponto "Torre Aldeota"\?/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Confirmar exclusão/i }));
-
-    await waitFor(() => {
-      expect(onDelete).toHaveBeenCalledWith('client-1', 'cp-1');
     });
   });
 });
