@@ -20,5 +20,6 @@ describe('Sidebar Navigation', () => {
     expect(screen.getByText('Cadastro')).toBeInTheDocument();
     expect(screen.getByText('Organizações')).toBeInTheDocument();
     expect(screen.getByText('Usuários')).toBeInTheDocument();
+    expect(screen.getByText('Rotinas de coleta')).toBeInTheDocument();
   });
 });

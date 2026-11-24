@@ -12,6 +12,7 @@ import {
   Settings,
   Building2,
   Users,
+  CalendarClock,
 } from 'lucide-react';
 import { AccountSettingsModal } from './AccountSettingsModal.jsx';
 import { YbyIcon } from '@/shared/ui/YbyIcon.jsx';
@@ -288,6 +289,31 @@ export function Sidebar({ collapsed, onToggleCollapse, onItemClick, className = 
                   )}
                   <Users className="w-5 h-5 flex-shrink-0" />
                   {!collapsed && <span className="whitespace-nowrap">Usuários</span>}
+                </>
+              )}
+            </NavLink>
+
+            {/* ROTINAS DE COLETA */}
+            <NavLink
+              to="/admin/rotinas"
+              onClick={onItemClick}
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all relative',
+                  isActive
+                    ? 'bg-yby-light text-yby-primary shadow-sm font-bold'
+                    : 'text-yby-heading hover:bg-white/60 hover:text-yby-primary'
+                )
+              }
+              title={collapsed ? 'Rotinas de coleta' : undefined}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute left-0 top-2 bottom-2 w-1.5 bg-yby-primary rounded-r-md" />
+                  )}
+                  <CalendarClock className="w-5 h-5 flex-shrink-0" />
+                  {!collapsed && <span className="whitespace-nowrap">Rotinas de coleta</span>}
                 </>
               )}
             </NavLink>

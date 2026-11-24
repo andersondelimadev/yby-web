@@ -17,6 +17,7 @@ const EdicaoPage = lazy(() => import('@/features/edicao/EdicaoPage.jsx').then(m 
 const PontoColetaPage = lazy(() => import('@/features/ponto-coleta/PontoColetaPage.jsx').then(m => ({ default: m.PontoColetaPage })));
 const OrganizacoesPage = lazy(() => import('@/features/admin/organizacoes/OrganizacoesPage.jsx').then(m => ({ default: m.OrganizacoesPage })));
 const UsuariosPage = lazy(() => import('@/features/admin/usuarios/UsuariosPage.jsx').then(m => ({ default: m.UsuariosPage })));
+const RotinasPage = lazy(() => import('@/features/admin/rotinas/RotinasPage.jsx').then(m => ({ default: m.RotinasPage })));
 
 function SuspenseWrapper({ children }) {
   const location = useLocation();
@@ -58,9 +59,11 @@ export function AppRoutes() {
           <Route path="/edicao" element={<EdicaoPage />} />
           <Route path="/admin/organizacoes" element={<OrganizacoesPage />} />
           <Route path="/admin/usuarios" element={<UsuariosPage />} />
+          <Route path="/admin/rotinas" element={<RotinasPage />} />
           <Route path="/admin" element={<Navigate to="/admin/organizacoes" replace />} />
           <Route path="/organizacoes" element={<Navigate to="/admin/organizacoes" replace />} />
           <Route path="/usuarios" element={<Navigate to="/admin/usuarios" replace />} />
+          <Route path="/rotinas" element={<Navigate to="/admin/rotinas" replace />} />
         </Route>
 
         {/* Fallback */}

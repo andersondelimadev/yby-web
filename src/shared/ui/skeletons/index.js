@@ -7,4 +7,5 @@ export { EdicaoSkeleton } from './EdicaoSkeleton.jsx';
 export { PontoColetaSkeleton } from './PontoColetaSkeleton.jsx';
 export { OrganizacoesSkeleton } from './OrganizacoesSkeleton.jsx';
 export { UsuariosSkeleton } from './UsuariosSkeleton.jsx';
+export { RotinasSkeleton } from './RotinasSkeleton.jsx';
 export { RouteSkeleton } from './RouteSkeleton.jsx';

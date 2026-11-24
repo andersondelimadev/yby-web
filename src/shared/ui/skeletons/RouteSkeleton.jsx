@@ -7,6 +7,7 @@ import { EdicaoSkeleton } from './EdicaoSkeleton.jsx';
 import { PontoColetaSkeleton } from './PontoColetaSkeleton.jsx';
 import { OrganizacoesSkeleton } from './OrganizacoesSkeleton.jsx';
 import { UsuariosSkeleton } from './UsuariosSkeleton.jsx';
+import { RotinasSkeleton } from './RotinasSkeleton.jsx';
 
 /**
  * Roteador Inteligente de Skeletons.
@@ -16,6 +17,9 @@ import { UsuariosSkeleton } from './UsuariosSkeleton.jsx';
  * @param {string} [props.pathname] - Rota atual da aplicação (ex: '/dashboard')
  */
 export function RouteSkeleton({ pathname = window.location.pathname }) {
+  if (pathname.includes('/rotinas')) {
+    return <RotinasSkeleton />;
+  }
   if (pathname.includes('/organizacoes')) {
     return <OrganizacoesSkeleton />;
   }
