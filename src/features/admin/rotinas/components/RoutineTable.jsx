@@ -23,12 +23,12 @@ export function RoutineTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-yby-surface/60 border-b border-yby-border text-xs font-bold text-yby-muted uppercase tracking-wider">
-              <th className="py-3.5 px-4 min-w-[160px]">Cooperativa</th>
-              <th className="py-3.5 px-4 min-w-[190px]">Cliente</th>
-              <th className="py-3.5 px-4 min-w-[240px]">Ponto de Coleta</th>
-              <th className="py-3.5 px-4 min-w-[130px]">Dia da Semana</th>
-              <th className="py-3.5 px-4 min-w-[140px]">Atualizado em</th>
-              <th className="py-3.5 px-4 text-center min-w-[100px]">Ações</th>
+              <th className="py-3.5 pl-5 pr-3 min-w-[140px]">Cooperativa</th>
+              <th className="py-3.5 px-3 min-w-[165px]">Cliente</th>
+              <th className="py-3.5 px-3 min-w-[210px]">Ponto de Coleta</th>
+              <th className="py-3.5 px-3 min-w-[120px] whitespace-nowrap">Dia da Semana</th>
+              <th className="py-3.5 px-3 min-w-[125px] whitespace-nowrap">Atualizado em</th>
+              <th className="py-3.5 pl-3 pr-5 text-center min-w-[88px]">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-yby-border/60 text-sm">
@@ -44,7 +44,7 @@ export function RoutineTable({
                   }`}
                 >
                   {/* Cooperativa */}
-                  <td className="py-3.5 px-4">
+                  <td className="py-3.5 pl-5 pr-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-emerald-50 text-yby-teal flex items-center justify-center shrink-0">
                         <Truck className="w-4 h-4" />
@@ -56,7 +56,7 @@ export function RoutineTable({
                   </td>
 
                   {/* Cliente */}
-                  <td className="py-3.5 px-4">
+                  <td className="py-3.5 px-3">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-4 h-4 text-yby-muted shrink-0" />
                       <span className="font-semibold text-xs text-yby-heading">
@@ -66,7 +66,7 @@ export function RoutineTable({
                   </td>
 
                   {/* Ponto de Coleta + Endereço Resumido */}
-                  <td className="py-3.5 px-4">
+                  <td className="py-3.5 px-3">
                     <div className="flex items-start gap-2">
                       <MapPin className="w-4 h-4 text-yby-primary shrink-0 mt-0.5" />
                       <div className="min-w-0">
@@ -81,20 +81,22 @@ export function RoutineTable({
                   </td>
 
                   {/* Dia da Semana */}
-                  <td className="py-3.5 px-4">
-                    <Badge variant={dayMeta.badgeVariant}>{dayMeta.label}</Badge>
+                  <td className="py-3.5 px-3 whitespace-nowrap">
+                    <Badge variant={dayMeta.badgeVariant} className="whitespace-nowrap">
+                      {dayMeta.label}
+                    </Badge>
                   </td>
 
                   {/* Registro (Atualizado em + tooltip com Criado em) */}
                   <td
-                    className="py-3.5 px-4 text-xs text-yby-muted whitespace-nowrap"
+                    className="py-3.5 px-3 text-xs text-yby-muted whitespace-nowrap"
                     title={`Criado em: ${formatRoutineDate(routine.created_at)}`}
                   >
                     {formatRoutineDate(routine.updated_at || routine.created_at)}
                   </td>
 
                   {/* Ações */}
-                  <td className="py-3.5 px-4 text-center">
+                  <td className="py-3.5 pl-3 pr-5 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         type="button"
