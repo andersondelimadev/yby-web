@@ -1,16 +1,17 @@
 import React from 'react';
-import { Pencil, Trash2, Truck, Building2, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Badge } from '@/shared/ui/Badge.jsx';
+import { Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/ui/Button.jsx';
-import { getWeekDayMeta } from '@/domain/constants/weekDays.js';
+import { WeekDayRuler } from './WeekDayRuler.jsx';
 import { formatRoutineDate } from '@/domain/formatters/routineFormatters.js';
 
 /**
- * Tabela paginada Desktop para listagem de Rotinas de Coleta.
+ * Tabela paginada Desktop enxuta (4 colunas) para listagem consolidada de Rotinas de Coleta.
+ * Segue a hierarquia visual: Onde (Ponto + Cliente) -> Quem (Cooperativa) -> Quando (Régua semanal) -> Ações.
  */
 export function RoutineTable({
   routines = [],
   totalItems = 0,
+  totalWeeklyCollections = 0,
   currentPage = 1,
   totalPages = 1,
   onPageChange,
@@ -22,77 +23,45 @@ export function RoutineTable({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-yby-surface/60 border-b border-yby-border text-xs font-bold text-yby-muted uppercase tracking-wider">
-              <th className="py-3.5 pl-5 pr-3 min-w-[140px]">Cooperativa</th>
-              <th className="py-3.5 px-3 min-w-[165px]">Cliente</th>
-              <th className="py-3.5 px-3 min-w-[210px]">Ponto de Coleta</th>
-              <th className="py-3.5 px-3 min-w-[120px] whitespace-nowrap">Dia da Semana</th>
-              <th className="py-3.5 px-3 min-w-[125px] whitespace-nowrap">Atualizado em</th>
-              <th className="py-3.5 pl-3 pr-5 text-center min-w-[88px]">Ações</th>
+            <tr className="bg-yby-surface/60 border-b border-yby-border text-[11px] font-bold text-yby-muted uppercase tracking-wider">
+              <th className="py-3.5 pl-5 pr-3">Ponto de Coleta e Cliente</th>
+              <th className="py-3.5 px-3 whitespace-nowrap">Cooperativa</th>
+              <th className="py-3.5 px-3 whitespace-nowrap">Dias da Semana</th>
+              <th className="py-3.5 pl-3 pr-5 text-center w-24">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-yby-border/60 text-sm">
             {routines.map((routine, index) => {
               const isEven = index % 2 === 1;
-              const dayMeta = getWeekDayMeta(routine.dayOfWeek);
+              const updatedLabel = formatRoutineDate(routine.updated_at || routine.created_at);
 
               return (
                 <tr
-                  key={routine.id}
+                  key={routine.groupKey || routine.id}
                   className={`transition-colors duration-150 ${
                     isEven ? 'bg-yby-zebra hover:bg-yby-tint/40' : 'bg-white hover:bg-yby-tint/40'
                   }`}
                 >
-                  {/* Cooperativa */}
+                  {/* Ponto de Coleta + Cliente + Endereço resumido */}
                   <td className="py-3.5 pl-5 pr-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-yby-teal flex items-center justify-center shrink-0">
-                        <Truck className="w-4 h-4" />
-                      </div>
-                      <span className="font-bold text-yby-heading text-xs sm:text-sm">
-                        {routine.cooperativeName}
-                      </span>
-                    </div>
+                    <p className="font-bold text-xs sm:text-sm text-yby-heading leading-tight">
+                      {routine.collectionPointName}
+                    </p>
+                    <p className="text-xs text-yby-muted mt-0.5 leading-snug">
+                      {routine.clientName} · {routine.collectionPointAddress}
+                    </p>
                   </td>
 
-                  {/* Cliente */}
-                  <td className="py-3.5 px-3">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-yby-muted shrink-0" />
-                      <span className="font-semibold text-xs text-yby-heading">
-                        {routine.clientName}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Ponto de Coleta + Endereço Resumido */}
-                  <td className="py-3.5 px-3">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-yby-primary shrink-0 mt-0.5" />
-                      <div className="min-w-0">
-                        <p className="font-bold text-xs text-yby-heading leading-tight">
-                          {routine.collectionPointName}
-                        </p>
-                        <span className="text-[11px] text-yby-muted block mt-0.5 leading-snug">
-                          {routine.collectionPointAddress}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Dia da Semana */}
+                  {/* Cooperativa */}
                   <td className="py-3.5 px-3 whitespace-nowrap">
-                    <Badge variant={dayMeta.badgeVariant} className="whitespace-nowrap">
-                      {dayMeta.label}
-                    </Badge>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-yby-tint text-yby-primary text-xs font-semibold">
+                      {routine.cooperativeName}
+                    </span>
                   </td>
 
-                  {/* Registro (Atualizado em + tooltip com Criado em) */}
-                  <td
-                    className="py-3.5 px-3 text-xs text-yby-muted whitespace-nowrap"
-                    title={`Criado em: ${formatRoutineDate(routine.created_at)}`}
-                  >
-                    {formatRoutineDate(routine.updated_at || routine.created_at)}
+                  {/* Mini Régua Semanal (D S T Q Q S S) */}
+                  <td className="py-3.5 px-3 whitespace-nowrap">
+                    <WeekDayRuler days={routine.days} />
                   </td>
 
                   {/* Ações */}
@@ -101,8 +70,8 @@ export function RoutineTable({
                       <button
                         type="button"
                         onClick={() => onEdit(routine)}
-                        className="p-1.5 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-white transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm"
-                        title="Editar rotina"
+                        className="p-1.5 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-white transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm cursor-pointer"
+                        title={`Editar rotina (Atualizado em ${updatedLabel})`}
                         aria-label={`Editar rotina ${routine.collectionPointName}`}
                       >
                         <Pencil className="w-4 h-4" />
@@ -111,7 +80,7 @@ export function RoutineTable({
                       <button
                         type="button"
                         onClick={() => onDelete(routine)}
-                        className="p-1.5 rounded-lg text-yby-danger/80 hover:text-yby-danger hover:bg-red-50 transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm"
+                        className="p-1.5 rounded-lg text-yby-danger/80 hover:text-yby-danger hover:bg-red-50 transition-all duration-150 hover:scale-110 active:scale-95 shadow-sm cursor-pointer"
                         title="Excluir rotina"
                         aria-label={`Excluir rotina ${routine.collectionPointName}`}
                       >
@@ -126,10 +95,11 @@ export function RoutineTable({
         </table>
       </div>
 
-      {/* Rodapé com Paginação */}
+      {/* Rodapé com Contadores e Paginação */}
       <div className="p-4 bg-white border-t border-yby-border flex flex-col sm:flex-row items-center justify-between gap-4">
         <span className="text-xs text-yby-muted">
-          Mostrando {routines.length} de {totalItems} rotinas de coleta
+          Mostrando {routines.length} de {totalItems} pontos com rotina ativa (
+          {totalWeeklyCollections} {totalWeeklyCollections === 1 ? 'coleta semanal' : 'coletas semanais'})
         </span>
 
         {totalPages > 1 && (

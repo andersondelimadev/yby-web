@@ -3,7 +3,7 @@ import { collectionRoutineRepository } from './collectionRoutineRepository.js';
 import { organizationRepository } from './organizationRepository.js';
 import { WEEK_DAYS } from '@/domain/constants/weekDays.js';
 
-describe('collectionRoutineRepository - CRUD e Filtros Combinados', () => {
+describe('collectionRoutineRepository - CRUD, Lote Multi-dia e Filtros Combinados', () => {
   beforeEach(() => {
     organizationRepository.reset();
     collectionRoutineRepository.reset();
@@ -34,40 +34,30 @@ describe('collectionRoutineRepository - CRUD e Filtros Combinados', () => {
     ).toBe(true);
   });
 
-  it('deve criar, impedir duplicidade, atualizar e excluir uma rotina mantendo datas de registro', async () => {
-    const created = await collectionRoutineRepository.create({
+  it('deve salvar múltiplos dias em lote, impedir conflito e excluir em lote', async () => {
+    const createdBatch = await collectionRoutineRepository.saveBatch({
       cooperativeId: 'coop-2',
       clientId: 'client-1',
       collectionPointId: 'cp-c-1-1',
-      dayOfWeek: WEEK_DAYS.DOMINGO.id,
+      days: [WEEK_DAYS.DOMINGO.id, WEEK_DAYS.SABADO.id],
     });
 
-    expect(created.id).toBeDefined();
-    expect(created.created_at).toBeDefined();
-    expect(created.updated_at).toBeDefined();
+    expect(createdBatch).toHaveLength(2);
+    expect(createdBatch[0].created_at).toBeDefined();
 
-    // Tenta criar duplicada no mesmo ponto e dia
+    // Tenta criar outro lote colidindo com Domingo no mesmo ponto
     await expect(
-      collectionRoutineRepository.create({
+      collectionRoutineRepository.saveBatch({
         cooperativeId: 'coop-3',
         clientId: 'client-1',
         collectionPointId: 'cp-c-1-1',
-        dayOfWeek: WEEK_DAYS.DOMINGO.id,
+        days: [WEEK_DAYS.DOMINGO.id],
       })
-    ).rejects.toThrow(/Já existe uma rotina cadastrada/i);
+    ).rejects.toThrow(/Já existe rotina cadastrada/i);
 
-    // Atualiza o dia da rotina criada
-    const updated = await collectionRoutineRepository.update(created.id, {
-      cooperativeId: 'coop-3',
-      clientId: 'client-1',
-      collectionPointId: 'cp-c-1-1',
-      dayOfWeek: WEEK_DAYS.SABADO.id,
-    });
-    expect(updated.cooperativeId).toBe('coop-3');
-    expect(updated.dayOfWeek).toBe(WEEK_DAYS.SABADO.id);
-
-    // Exclui
-    const deleted = await collectionRoutineRepository.delete(created.id);
+    // Exclui o lote criado
+    const ids = createdBatch.map((r) => r.id);
+    const deleted = await collectionRoutineRepository.deleteMany(ids);
     expect(deleted).toBe(true);
   });
 });

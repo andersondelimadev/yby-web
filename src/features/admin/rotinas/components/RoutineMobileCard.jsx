@@ -1,60 +1,34 @@
 import React from 'react';
-import { Pencil, Trash2, Truck, Building2, MapPin, Clock } from 'lucide-react';
-import { Badge } from '@/shared/ui/Badge.jsx';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button.jsx';
-import { getWeekDayMeta } from '@/domain/constants/weekDays.js';
-import { formatRoutineDate } from '@/domain/formatters/routineFormatters.js';
+import { WeekDayRuler } from './WeekDayRuler.jsx';
 
 /**
- * Card responsivo Mobile para exibição de uma Rotina de Coleta.
+ * Card responsivo Mobile para exibição de uma Rotina de Coleta consolidada.
  */
 export function RoutineMobileCard({ routine, onEdit, onDelete }) {
-  const dayMeta = getWeekDayMeta(routine.dayOfWeek);
-
   return (
     <div className="bg-white rounded-2xl border border-yby-border p-4 shadow-card space-y-3 transition-all duration-300 hover:shadow-card-elevated hover:border-yby-primary/30">
-      {/* Cabeçalho: Cooperativa + Badge Dia da Semana */}
+      {/* Ponto de Coleta + Cliente + Cooperativa */}
       <div className="flex items-start justify-between gap-3 border-b border-yby-border/60 pb-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-yby-teal flex items-center justify-center shrink-0">
-            <Truck className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-yby-muted block">
-              Cooperativa
-            </span>
-            <h3 className="font-bold text-sm text-yby-heading truncate">
-              {routine.cooperativeName}
-            </h3>
-          </div>
+        <div className="min-w-0">
+          <h3 className="font-bold text-sm text-yby-heading leading-tight">
+            {routine.collectionPointName}
+          </h3>
+          <p className="text-xs text-yby-muted mt-0.5 leading-snug">
+            {routine.clientName} · {routine.collectionPointAddress}
+          </p>
         </div>
 
-        <Badge variant={dayMeta.badgeVariant}>{dayMeta.label}</Badge>
+        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-yby-tint text-yby-primary text-xs font-semibold shrink-0">
+          {routine.cooperativeName}
+        </span>
       </div>
 
-      {/* Cliente e Ponto de Coleta */}
-      <div className="space-y-2 text-xs">
-        <div className="flex items-center gap-2 text-yby-heading">
-          <Building2 className="w-3.5 h-3.5 text-yby-muted shrink-0" />
-          <span className="font-semibold">{routine.clientName}</span>
-        </div>
-
-        <div className="flex items-start gap-2 bg-yby-surface/50 p-2.5 rounded-xl border border-yby-border/60">
-          <MapPin className="w-3.5 h-3.5 text-yby-primary shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="font-bold text-yby-heading leading-tight">
-              {routine.collectionPointName}
-            </p>
-            <p className="text-[11px] text-yby-muted mt-0.5 leading-snug">
-              {routine.collectionPointAddress}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-[11px] text-yby-muted pt-0.5">
-          <Clock className="w-3 h-3 shrink-0" />
-          <span>Atualizado em {formatRoutineDate(routine.updated_at || routine.created_at)}</span>
-        </div>
+      {/* Dias da semana */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] font-semibold text-yby-muted">Dias de coleta:</span>
+        <WeekDayRuler days={routine.days} />
       </div>
 
       {/* Ações Mobile (>= 44px tap targets) */}

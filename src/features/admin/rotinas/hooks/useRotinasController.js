@@ -3,18 +3,30 @@ import { toast } from 'sonner';
 import { collectionRoutineRepository } from '@/services/repositories/collectionRoutineRepository.js';
 import { organizationRepository } from '@/services/repositories/organizationRepository.js';
 import { ORGANIZATION_TYPES } from '@/domain/constants/organizationTypes.js';
+import { WEEK_DAYS } from '@/domain/constants/weekDays.js';
+import {
+  groupRoutinesByPointAndCoop,
+  groupRoutinesByCooperative,
+  countCollectionsByWeekDay,
+} from '@/domain/formatters/routineGrouping.js';
 
 /**
  * Controller Hook (GRASP Controller) para a tela de Rotinas de Coleta.
- * Orquestra busca combinada, filtros, paginação, estados vazios e CRUD.
+ * Orquestra busca combinada, alternância de visões (Lista, Por Cooperativa, Por Dia),
+ * agrupamento por Ponto + Cooperativa, paginação e CRUD em lote de múltiplos dias.
  */
 export function useRotinasController() {
-  const [routines, setRoutines] = useState([]);
+  const [filteredRoutines, setFilteredRoutines] = useState([]);
+  const [allRoutines, setAllRoutines] = useState([]);
   const [totalRegistered, setTotalRegistered] = useState(0);
   const [allOrganizations, setAllOrganizations] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Modo de visualização: 'list' | 'coop' | 'day'
+  const [viewMode, setViewMode] = useState('list');
+  const [selectedDayTab, setSelectedDayTab] = useState(WEEK_DAYS.SEGUNDA.id);
 
   // Filtros combináveis
   const [search, setSearch] = useState('');
@@ -22,7 +34,7 @@ export function useRotinasController() {
   const [clientId, setClientId] = useState('Todos');
   const [days, setDays] = useState([]);
 
-  // Paginação
+  // Paginação (sobre grupos na visão Lista)
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
@@ -34,12 +46,20 @@ export function useRotinasController() {
   const fetchData = useCallback(async () => {
     try {
       setIsFetching(true);
-      const [routineData, totalCount, orgData] = await Promise.all([
-        collectionRoutineRepository.getAll({ search, cooperativeId, clientId, days }),
+      const effectiveDays = viewMode === 'day' ? [] : days;
+      const [routineData, allData, totalCount, orgData] = await Promise.all([
+        collectionRoutineRepository.getAll({
+          search,
+          cooperativeId,
+          clientId,
+          days: effectiveDays,
+        }),
+        collectionRoutineRepository.getAll(),
         collectionRoutineRepository.countAll(),
         organizationRepository.getAll(),
       ]);
-      setRoutines(routineData);
+      setFilteredRoutines(routineData);
+      setAllRoutines(allData);
       setTotalRegistered(totalCount);
       setAllOrganizations(orgData);
     } catch (err) {
@@ -48,7 +68,7 @@ export function useRotinasController() {
       setInitialLoading(false);
       setIsFetching(false);
     }
-  }, [search, cooperativeId, clientId, days]);
+  }, [search, cooperativeId, clientId, days, viewMode]);
 
   useEffect(() => {
     fetchData();
@@ -68,6 +88,27 @@ export function useRotinasController() {
     return [...withPoints, ...withoutPoints];
   }, [allOrganizations]);
 
+  // Agrupamento consolidado por Ponto de Coleta + Cooperativa
+  const groupedRoutines = useMemo(
+    () => groupRoutinesByPointAndCoop(filteredRoutines),
+    [filteredRoutines]
+  );
+
+  const cooperativeGroups = useMemo(
+    () => groupRoutinesByCooperative(groupedRoutines),
+    [groupedRoutines]
+  );
+
+  const dayCounts = useMemo(
+    () => countCollectionsByWeekDay(groupedRoutines),
+    [groupedRoutines]
+  );
+
+  const totalWeeklyCollections = useMemo(
+    () => groupedRoutines.reduce((acc, g) => acc + g.days.length, 0),
+    [groupedRoutines]
+  );
+
   const toggleDay = (dayId) => {
     setDays((prev) =>
       prev.includes(dayId) ? prev.filter((d) => d !== dayId) : [...prev, dayId]
@@ -85,25 +126,22 @@ export function useRotinasController() {
     Boolean(search.trim()) ||
     cooperativeId !== 'Todas' ||
     clientId !== 'Todos' ||
-    days.length > 0;
+    (viewMode !== 'day' && days.length > 0);
 
   const handleSave = async (formData) => {
     try {
       setSaving(true);
-      if (editingRoutine) {
-        const updated = await collectionRoutineRepository.update(editingRoutine.id, formData);
-        setRoutines((prev) =>
-          prev.map((item) => (item.id === editingRoutine.id ? updated : item))
-        );
-        toast.success('Rotina de coleta atualizada com sucesso!');
-        setEditingRoutine(null);
-      } else {
-        const created = await collectionRoutineRepository.create(formData);
-        setTotalRegistered((prev) => prev + 1);
-        setRoutines((prev) => [created, ...prev]);
-        toast.success('Rotina de coleta cadastrada com sucesso!');
-        setIsCreating(false);
-      }
+      const replaceIds = editingRoutine?.ids || (editingRoutine?.id ? [editingRoutine.id] : []);
+      await collectionRoutineRepository.saveBatch(formData, replaceIds);
+
+      toast.success(
+        editingRoutine
+          ? 'Rotina de coleta atualizada com sucesso!'
+          : 'Rotina de coleta cadastrada com sucesso!'
+      );
+      setEditingRoutine(null);
+      setIsCreating(false);
+      await fetchData();
       return { ok: true };
     } catch (err) {
       if (err?.code === 'DUPLICATE_ROUTINE' || err?.code === 'VALIDATION_ERROR') {
@@ -123,35 +161,44 @@ export function useRotinasController() {
   const handleDelete = async () => {
     if (!deletingRoutine) return;
     try {
-      await collectionRoutineRepository.delete(deletingRoutine.id);
-      setRoutines((prev) => prev.filter((item) => item.id !== deletingRoutine.id));
-      setTotalRegistered((prev) => Math.max(0, prev - 1));
+      const idsToDelete = deletingRoutine.ids || [deletingRoutine.id];
+      await collectionRoutineRepository.deleteMany(idsToDelete);
       toast.success('Rotina de coleta excluída com sucesso.');
+      setDeletingRoutine(null);
+      await fetchData();
     } catch (err) {
       toast.error('Erro ao excluir rotina de coleta.');
-    } finally {
       setDeletingRoutine(null);
     }
   };
 
-  // Paginação
-  const totalItems = routines.length;
+  // Paginação (sobre grupos consolidados)
+  const totalItems = groupedRoutines.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const paginatedRoutines = useMemo(() => {
     const safePage = Math.min(currentPage, totalPages);
     const start = (safePage - 1) * pageSize;
-    return routines.slice(start, start + pageSize);
-  }, [routines, currentPage, totalPages, pageSize]);
+    return groupedRoutines.slice(start, start + pageSize);
+  }, [groupedRoutines, currentPage, totalPages, pageSize]);
 
   return {
     routines: paginatedRoutines,
+    groupedRoutines,
+    cooperativeGroups,
+    dayCounts,
+    allRoutines,
     allFilteredCount: totalItems,
+    totalWeeklyCollections,
     totalRegistered,
     cooperatives,
     clientOrganizations,
     totalPages,
     currentPage: Math.min(currentPage, totalPages),
     setCurrentPage,
+    viewMode,
+    setViewMode,
+    selectedDayTab,
+    setSelectedDayTab,
     initialLoading,
     isFetching,
     saving,

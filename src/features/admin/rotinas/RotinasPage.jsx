@@ -8,6 +8,8 @@ import { RotinasSkeleton } from '@/shared/ui/skeletons/RotinasSkeleton.jsx';
 import { RoutineFilterBar } from './components/RoutineFilterBar.jsx';
 import { RoutineTable } from './components/RoutineTable.jsx';
 import { RoutineMobileCard } from './components/RoutineMobileCard.jsx';
+import { RoutineByCoopView } from './components/RoutineByCoopView.jsx';
+import { RoutineByDayView } from './components/RoutineByDayView.jsx';
 import { RoutineModal } from './components/RoutineModal.jsx';
 import { DeleteRoutineModal } from './components/DeleteRoutineModal.jsx';
 
@@ -18,13 +20,22 @@ import { DeleteRoutineModal } from './components/DeleteRoutineModal.jsx';
 export function RotinasPage() {
   const {
     routines,
+    groupedRoutines,
+    cooperativeGroups,
+    dayCounts,
+    allRoutines,
     allFilteredCount,
+    totalWeeklyCollections,
     totalRegistered,
     cooperatives,
     clientOrganizations,
     totalPages,
     currentPage,
     setCurrentPage,
+    viewMode,
+    setViewMode,
+    selectedDayTab,
+    setSelectedDayTab,
     initialLoading,
     isFetching,
     saving,
@@ -38,14 +49,14 @@ export function RotinasPage() {
   }
 
   const isDatabaseEmpty = totalRegistered === 0;
-  const isFilterEmpty = totalRegistered > 0 && routines.length === 0;
+  const isFilterEmpty = totalRegistered > 0 && groupedRoutines.length === 0;
 
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
       <PageHeader
         title="Rotinas de coleta"
-        subtitle="Gerencie qual cooperativa coleta em cada ponto de coleta e em qual dia da semana"
+        subtitle="Gerencie quais cooperativas atendem cada ponto de coleta e os dias da semana"
         actions={
           <Button
             variant="primary"
@@ -59,12 +70,14 @@ export function RotinasPage() {
         }
       />
 
-      {/* Barra de Filtros */}
+      {/* Barra de Visões e Filtros */}
       {!isDatabaseEmpty && (
         <RoutineFilterBar
           filters={filters}
           cooperatives={cooperatives}
           clientOrganizations={clientOrganizations}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
           isFetching={isFetching}
         />
       )}
@@ -75,7 +88,7 @@ export function RotinasPage() {
           <EmptyState
             icon={<CalendarClock className="w-6 h-6 stroke-[2.2]" />}
             title="Nenhuma rotina de coleta cadastrada"
-            description="Cadastre a primeira rotina vinculando uma cooperativa, um ponto de coleta e o dia da semana."
+            description="Cadastre a primeira rotina vinculando uma cooperativa, um ponto de coleta e os dias da semana."
             action={
               <Button variant="primary" size="sm" onClick={() => modals.setIsCreating(true)}>
                 <Plus className="w-4 h-4 mr-1.5" />
@@ -97,13 +110,29 @@ export function RotinasPage() {
             }
           />
         </div>
+      ) : viewMode === 'coop' ? (
+        <RoutineByCoopView
+          cooperativeGroups={cooperativeGroups}
+          onEdit={(r) => modals.setEditingRoutine(r)}
+          onDelete={(r) => modals.setDeletingRoutine(r)}
+        />
+      ) : viewMode === 'day' ? (
+        <RoutineByDayView
+          groupedRoutines={groupedRoutines}
+          dayCounts={dayCounts}
+          selectedDayTab={selectedDayTab}
+          onSelectDayTab={setSelectedDayTab}
+          onEdit={(r) => modals.setEditingRoutine(r)}
+          onDelete={(r) => modals.setDeletingRoutine(r)}
+        />
       ) : (
         <>
-          {/* Visualização Desktop (Tabela Paginada) */}
+          {/* Visualização Desktop (Tabela Enxuta de 4 Colunas Paginada) */}
           <div className="hidden md:block">
             <RoutineTable
               routines={routines}
               totalItems={allFilteredCount}
+              totalWeeklyCollections={totalWeeklyCollections}
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
@@ -116,7 +145,7 @@ export function RotinasPage() {
           <div className="md:hidden space-y-3">
             {routines.map((routine) => (
               <RoutineMobileCard
-                key={routine.id}
+                key={routine.groupKey || routine.id}
                 routine={routine}
                 onEdit={(r) => modals.setEditingRoutine(r)}
                 onDelete={(r) => modals.setDeletingRoutine(r)}
@@ -126,7 +155,7 @@ export function RotinasPage() {
             {totalPages > 1 && (
               <div className="pt-2 flex items-center justify-between text-xs text-yby-muted">
                 <span>
-                  Página {currentPage} de {totalPages} ({allFilteredCount} total)
+                  Página {currentPage} de {totalPages} ({allFilteredCount} pontos)
                 </span>
                 <div className="flex gap-2">
                   <Button
@@ -152,12 +181,13 @@ export function RotinasPage() {
         </>
       )}
 
-      {/* Modal de Criação / Edição */}
+      {/* Modal de Criação / Edição (Múltiplos dias + Prevenção de conflito) */}
       {(modals.isCreating || modals.editingRoutine) && (
         <RoutineModal
           routine={modals.editingRoutine}
           cooperatives={cooperatives}
           clientOrganizations={clientOrganizations}
+          existingRoutines={allRoutines}
           saving={saving}
           onClose={() => {
             modals.setIsCreating(false);

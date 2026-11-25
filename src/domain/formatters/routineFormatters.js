@@ -33,13 +33,37 @@ export function formatRoutineDate(isoDate) {
 }
 
 /**
- * Monta a mensagem padrão de confirmação de exclusão de rotina de coleta.
+ * Formata uma lista de dias da semana em texto legível em português.
+ * @param {string[]} days
+ * @returns {string}
+ */
+export function formatDaysList(days = []) {
+  const labels = days.map((dayId) => getWeekDayMeta(dayId).label);
+  if (labels.length === 0) return '';
+  if (labels.length === 1) return labels[0];
+  return `${labels.slice(0, -1).join(', ')} e ${labels[labels.length - 1]}`;
+}
+
+/**
+ * Monta a mensagem padrão de confirmação de exclusão de rotina de coleta
+ * (suporta rotina de 1 dia ou grupo de múltiplos dias no mesmo ponto).
  * @param {Object} routine
  * @returns {string}
  */
 export function buildRoutineDeleteMessage(routine) {
   const coop = routine?.cooperativeName || 'Cooperativa';
   const point = routine?.collectionPointName || 'Ponto de coleta';
-  const dayLabel = getWeekDayMeta(routine?.dayOfWeek).label;
+  const days =
+    Array.isArray(routine?.days) && routine.days.length > 0
+      ? routine.days
+      : routine?.dayOfWeek
+      ? [routine.dayOfWeek]
+      : [];
+
+  if (days.length > 1) {
+    return `A coleta da cooperativa "${coop}" no ponto "${point}" nos dias ${formatDaysList(days)} será removida permanentemente.`;
+  }
+
+  const dayLabel = getWeekDayMeta(days[0]).label;
   return `A coleta da cooperativa "${coop}" no ponto "${point}" às ${dayLabel} será removida permanentemente.`;
 }

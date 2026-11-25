@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, CalendarClock, AlertCircle } from 'lucide-react';
+import { X, CalendarClock, AlertCircle, Info } from 'lucide-react';
 import { SearchableSelect } from '@/shared/ui/SearchableSelect.jsx';
-import { SelectField } from '@/shared/ui/SelectField.jsx';
 import { Button } from '@/shared/ui/Button.jsx';
-import { WEEK_DAYS_LIST } from '@/domain/constants/weekDays.js';
+import { WEEK_DAYS_LIST, getWeekDayMeta } from '@/domain/constants/weekDays.js';
 import { formatPointShortAddress, formatRoutineDate } from '@/domain/formatters/routineFormatters.js';
+import { getOccupiedDaysForPoint } from '@/domain/validators/routineValidator.js';
 
 /**
  * Modal unificado de Criação e Edição de Rotina de Coleta.
- * Contempla selects com busca, dependência Cliente -> Ponto de Coleta
- * e exibição de erros inline (incluindo detecção de rotina duplicada).
+ * Suporta seleção múltipla de dias da semana em uma única operação e
+ * bloqueio preventivo de dias já atendidos por outra cooperativa no mesmo ponto.
  */
 export function RoutineModal({
   routine = null,
   cooperatives = [],
   clientOrganizations = [],
+  existingRoutines = [],
   saving = false,
   onClose,
   onSave,
@@ -24,7 +25,7 @@ export function RoutineModal({
   const [cooperativeId, setCooperativeId] = useState('');
   const [clientId, setClientId] = useState('');
   const [collectionPointId, setCollectionPointId] = useState('');
-  const [dayOfWeek, setDayOfWeek] = useState('');
+  const [selectedDays, setSelectedDays] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState('');
 
@@ -33,12 +34,18 @@ export function RoutineModal({
       setCooperativeId(routine.cooperativeId || '');
       setClientId(routine.clientId || '');
       setCollectionPointId(routine.collectionPointId || '');
-      setDayOfWeek(routine.dayOfWeek || '');
+      setSelectedDays(
+        Array.isArray(routine.days)
+          ? [...routine.days]
+          : routine.dayOfWeek
+          ? [routine.dayOfWeek]
+          : []
+      );
     } else {
       setCooperativeId('');
       setClientId('');
       setCollectionPointId('');
-      setDayOfWeek('');
+      setSelectedDays([]);
     }
     setFieldErrors({});
     setFormError('');
@@ -73,15 +80,34 @@ export function RoutineModal({
     }));
   }, [selectedClient]);
 
-  const dayOptions = WEEK_DAYS_LIST.map((d) => ({
-    value: d.id,
-    label: d.label,
-  }));
+  // Mapeia dias já ocupados no ponto selecionado (ignorando os IDs do grupo atual em edição)
+  const occupiedDays = useMemo(() => {
+    const ignoreIds = routine?.ids || (routine?.id ? [routine.id] : []);
+    return getOccupiedDaysForPoint(existingRoutines, collectionPointId, ignoreIds);
+  }, [existingRoutines, collectionPointId, routine]);
+
+  const occupiedEntries = useMemo(() => Object.entries(occupiedDays), [occupiedDays]);
 
   const handleClientChange = (newClientId) => {
     setClientId(newClientId);
     setCollectionPointId('');
+    setSelectedDays([]);
     setFieldErrors((prev) => ({ ...prev, clientId: undefined, collectionPointId: undefined }));
+    setFormError('');
+  };
+
+  const handlePointChange = (newPointId) => {
+    setCollectionPointId(newPointId);
+    setFieldErrors((prev) => ({ ...prev, collectionPointId: undefined }));
+    setFormError('');
+  };
+
+  const toggleDay = (dayId) => {
+    if (occupiedDays[dayId]) return;
+    setSelectedDays((prev) =>
+      prev.includes(dayId) ? prev.filter((d) => d !== dayId) : [...prev, dayId]
+    );
+    setFieldErrors((prev) => ({ ...prev, days: undefined }));
     setFormError('');
   };
 
@@ -90,17 +116,20 @@ export function RoutineModal({
     setFieldErrors({});
     setFormError('');
 
+    const validSelectedDays = selectedDays.filter((d) => !occupiedDays[d]);
+
     const result = await onSave({
       cooperativeId,
       clientId,
       collectionPointId,
-      dayOfWeek,
+      days: validSelectedDays,
     });
 
     if (result && !result.ok) {
       if (result.fieldErrors && Object.keys(result.fieldErrors).length > 0) {
         setFieldErrors(result.fieldErrors);
-      } else if (result.error) {
+      }
+      if (result.error && (!result.fieldErrors || Object.keys(result.fieldErrors).length === 0)) {
         setFormError(result.error);
       }
     }
@@ -128,8 +157,8 @@ export function RoutineModal({
               </h3>
               <p className="text-xs text-yby-muted">
                 {isEditing
-                  ? 'Atualize a cooperativa, o ponto ou o dia da semana desta coleta'
-                  : 'Defina qual cooperativa coleta em cada ponto e em qual dia da semana'}
+                  ? 'Atualize a cooperativa, o ponto ou os dias da semana desta coleta'
+                  : 'Selecione um ou mais dias da semana de uma só vez para este ponto'}
               </p>
             </div>
           </div>
@@ -137,7 +166,7 @@ export function RoutineModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-yby-surface"
+            className="p-1.5 rounded-lg text-yby-muted hover:text-yby-heading hover:bg-yby-surface cursor-pointer"
             aria-label="Fechar modal de rotina"
           >
             <X className="w-5 h-5" />
@@ -192,11 +221,7 @@ export function RoutineModal({
             required
             disabled={!clientId || clientHasNoPoints}
             value={collectionPointId}
-            onChange={(val) => {
-              setCollectionPointId(val);
-              setFieldErrors((prev) => ({ ...prev, collectionPointId: undefined }));
-              setFormError('');
-            }}
+            onChange={handlePointChange}
             options={pointOptions}
             placeholder={
               !clientId
@@ -215,20 +240,74 @@ export function RoutineModal({
             }
           />
 
-          <SelectField
-            id="routine-day"
-            label="Dia da semana"
-            required
-            options={dayOptions}
-            value={dayOfWeek}
-            onChange={(e) => {
-              setDayOfWeek(e.target.value);
-              setFieldErrors((prev) => ({ ...prev, dayOfWeek: undefined }));
-              setFormError('');
-            }}
-            placeholder="Selecione o dia da semana..."
-            error={fieldErrors.dayOfWeek}
-          />
+          {/* Seleção Múltipla de Dias da Semana com Bloqueio Preventivo */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-yby-heading">
+                Dias da semana <span className="text-yby-danger">*</span>
+              </span>
+              <span className="text-[11px] text-yby-muted">Selecione 1 ou mais dias</span>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1.5" role="group" aria-label="Dias da semana">
+              {WEEK_DAYS_LIST.map((day) => {
+                const occupiedBy = occupiedDays[day.id];
+                const isSelected = selectedDays.includes(day.id) && !occupiedBy;
+
+                if (occupiedBy) {
+                  return (
+                    <button
+                      key={day.id}
+                      type="button"
+                      disabled
+                      title={`${day.label}: já atendido por ${occupiedBy.cooperativeName}`}
+                      aria-label={`${day.label} (indisponível - ${occupiedBy.cooperativeName})`}
+                      className="py-2 rounded-xl border border-dashed border-yby-border bg-yby-surface text-yby-muted/55 text-xs font-semibold cursor-not-allowed"
+                    >
+                      {day.shortLabel}
+                    </button>
+                  );
+                }
+
+                return (
+                  <button
+                    key={day.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    aria-label={day.label}
+                    onClick={() => toggleDay(day.id)}
+                    className={`py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-yby-primary text-white border-yby-primary shadow-sm'
+                        : 'bg-white text-yby-heading border-yby-border hover:border-yby-primary hover:bg-yby-tint/40'
+                    }`}
+                  >
+                    {day.shortLabel}
+                  </button>
+                );
+              })}
+            </div>
+
+            {occupiedEntries.length > 0 && (
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2 text-[11px] text-amber-900">
+                <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-700" />
+                <span>
+                  Dias indisponíveis para este ponto por já terem coleta vinculada:{' '}
+                  {occupiedEntries
+                    .map(
+                      ([dayId, info]) =>
+                        `${getWeekDayMeta(dayId).shortLabel} (${info.cooperativeName})`
+                    )
+                    .join(', ')}
+                  .
+                </span>
+              </div>
+            )}
+
+            {fieldErrors.days && (
+              <p className="text-xs font-medium text-yby-danger">{fieldErrors.days}</p>
+            )}
+          </div>
 
           {/* Datas de Registro no modo Edição */}
           {isEditing && (

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { validateRoutineInput } from './routineValidator.js';
+import {
+  validateRoutineInput,
+  validateRoutineBatchInput,
+  getOccupiedDaysForPoint,
+} from './routineValidator.js';
 import { WEEK_DAYS } from '../constants/weekDays.js';
 
 describe('routineValidator - Regras de Domínio de Rotinas de Coleta', () => {
@@ -11,6 +15,14 @@ describe('routineValidator - Regras de Domínio de Rotinas de Coleta', () => {
       clientId: 'client-1',
       collectionPointId: 'cp-c-1-1',
       dayOfWeek: WEEK_DAYS.SEGUNDA.id,
+    },
+    {
+      id: 'rot-2',
+      cooperativeId: 'coop-4',
+      cooperativeName: 'Rosa Virginia',
+      clientId: 'client-1',
+      collectionPointId: 'cp-c-1-1',
+      dayOfWeek: WEEK_DAYS.TERCA.id,
     },
   ];
 
@@ -53,5 +65,38 @@ describe('routineValidator - Regras de Domínio de Rotinas de Coleta', () => {
 
     expect(result.valid).toBe(true);
     expect(result.duplicateError).toBeNull();
+  });
+
+  it('deve mapear dias ocupados no ponto para bloqueio preventivo e validar lote de múltiplos dias', () => {
+    const occupied = getOccupiedDaysForPoint(existing, 'cp-c-1-1', ['rot-1']);
+    expect(occupied[WEEK_DAYS.SEGUNDA.id]).toBeUndefined();
+    expect(occupied[WEEK_DAYS.TERCA.id]?.cooperativeName).toBe('Rosa Virginia');
+
+    const batchInvalid = validateRoutineBatchInput(
+      {
+        cooperativeId: 'coop-2',
+        clientId: 'client-1',
+        collectionPointId: 'cp-c-1-1',
+        days: [WEEK_DAYS.QUARTA.id, WEEK_DAYS.TERCA.id],
+      },
+      existing,
+      ['rot-1']
+    );
+    expect(batchInvalid.valid).toBe(false);
+    expect(batchInvalid.duplicateError).toContain('Terça-feira');
+    expect(batchInvalid.duplicateError).toContain('Rosa Virginia');
+
+    const batchValid = validateRoutineBatchInput(
+      {
+        cooperativeId: 'coop-2',
+        clientId: 'client-1',
+        collectionPointId: 'cp-c-1-1',
+        days: [WEEK_DAYS.SEGUNDA.id, WEEK_DAYS.QUARTA.id, WEEK_DAYS.SEXTA.id],
+      },
+      existing,
+      ['rot-1']
+    );
+    expect(batchValid.valid).toBe(true);
+    expect(batchValid.duplicateError).toBeNull();
   });
 });
